@@ -62,5 +62,20 @@ BEGIN
 		loyalty_charge_x, loyalty_charge_coef, storage_cost_coef,
 		bank_rate_x, bank_rate_coef, product_cost_x, product_cost_coef FROM inserted
 	WHERE CONCAT(product_id, store_id) NOT IN (SELECT CONCAT(product_id, store_id) FROM LossFunctionParameters)
+		AND product_id IN (SELECT product_id FROM Products) AND store_id IN (SELECT store_id FROM Stores)
+END
+GO
+
+DROP TRIGGER IF EXISTS IfPurchaseValid
+GO
+CREATE TRIGGER IfPurchaseValid ON Purchases
+INSTEAD OF INSERT
+AS
+BEGIN
+	INSERT INTO Purchases(purchase_date, product_id,
+		store_id, price, sales, discount, revenue)
+	SELECT purchase_date, product_id,
+		store_id, price, sales, discount, revenue FROM inserted
+	WHERE product_id IN (SELECT product_id FROM Products) AND store_id IN (SELECT store_id FROM Stores)
 END
 GO
