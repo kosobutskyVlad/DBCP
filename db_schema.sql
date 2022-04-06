@@ -55,7 +55,7 @@ CREATE TABLE LossFunctionParameters (
 DROP TABLE IF EXISTS Purchases;
 CREATE TABLE Purchases (
 	purchase_id INT PRIMARY KEY IDENTITY(1, 1),
-	purchase_date DATETIME,
+	purchase_date DATE,
 	product_id CHAR(5),
 	store_id CHAR(5),
 	price FLOAT,
