@@ -21,7 +21,7 @@ AS
 BEGIN
 	INSERT INTO Cities
 	SELECT * FROM inserted
-	WHERE city_id NOT IN (SELECT city_id FROM StoreTypes)
+	WHERE city_id NOT IN (SELECT city_id FROM Cities)
 END
 GO
 
