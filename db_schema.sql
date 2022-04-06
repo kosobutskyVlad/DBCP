@@ -29,6 +29,7 @@ CREATE TABLE Stores (
 DROP TABLE IF EXISTS Products;
 CREATE TABLE Products (
 	product_id CHAR(5) PRIMARY KEY,
+	product_name VARCHAR(50),
 	hierarchy_code CHAR(11),
 	price FLOAT,
 	product_length FLOAT,
