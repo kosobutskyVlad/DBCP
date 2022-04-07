@@ -1,20 +1,26 @@
 import multiprocessing
-from typing import Optional
 
 from fastapi import FastAPI, APIRouter
-import pyodbc
 import uvicorn
+
+from endpoints import cities, storetypes, stores, products, parameters, purchases
 
 server_process = None
 
 app = FastAPI()
 router = APIRouter()
+app.include_router(cities.router)
+app.include_router(storetypes.router)
+app.include_router(stores.router)
+app.include_router(products.router)
+app.include_router(parameters.router)
+app.include_router(purchases.router)
 
 def start_server():
     global server_process
     server_process = multiprocessing.Process(
         target=uvicorn.run,
-        args=("server:app",),
+        args=("server_process:app",),
         kwargs={"host": "127.0.0.1", "port": 5001})
     server_process.start()
 
