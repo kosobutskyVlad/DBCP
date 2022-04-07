@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException
 from typing import Optional
+
 import pyodbc
+from fastapi import APIRouter, HTTPException
 
 router = APIRouter(
     prefix="/parameters",

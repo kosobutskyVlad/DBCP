@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException
 import pyodbc
+from fastapi import APIRouter, HTTPException
 
 router = APIRouter(
     prefix="/storetypes",
