@@ -1,14 +1,14 @@
-import os
 import multiprocessing
 from typing import Optional
 
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 import pyodbc
 import uvicorn
 
 server_process = None
 
 app = FastAPI()
+router = APIRouter()
 
 def start_server():
     global server_process
