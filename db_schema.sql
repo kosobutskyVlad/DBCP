@@ -20,8 +20,8 @@ DROP TABLE IF EXISTS Stores;
 CREATE TABLE Stores (
 	store_id CHAR(5) PRIMARY KEY,
 	storetype_id CHAR(4),
+	city_id CHAR(4),
 	store_size INT,
-	city_id CHAR(4)
 	CONSTRAINT FK_Store_StoreType FOREIGN KEY (storetype_id) REFERENCES StoreTypes(storetype_id),
 	CONSTRAINT FK_Store_City FOREIGN KEY (city_id) REFERENCES Cities(city_id)
 );
@@ -56,9 +56,9 @@ CREATE TABLE LossFunctionParameters (
 DROP TABLE IF EXISTS Purchases;
 CREATE TABLE Purchases (
 	purchase_id INT PRIMARY KEY IDENTITY(1, 1),
-	purchase_date DATE,
-	product_id CHAR(5),
 	store_id CHAR(5),
+	product_id CHAR(5),
+	purchase_date DATE,
 	price FLOAT,
 	sales INT,
 	discount FLOAT,
