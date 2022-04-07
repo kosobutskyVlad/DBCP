@@ -4,7 +4,7 @@ import pyodbc
 
 router = APIRouter(
     prefix="/cities",
-    tags=["City"],
+    tags=["Cities"],
     responses={404: {"description": "Not found"}},
 )
 
@@ -110,7 +110,7 @@ def update_city(city_id: str, city_name: Optional[str] = None,
     cursor.execute(f"UPDATE Cities SET {', '.join(update_values)} WHERE city_id = '{city_id}'")
     conn.commit()
 
-    cursor.execute(f"SELECT city_id FROM Cities WHERE city_id = '{city_id}'")
+    cursor.execute(f"SELECT * FROM Cities WHERE city_id = '{city_id}'")
     data = []
     for row in cursor:
         data.append(list(row))
