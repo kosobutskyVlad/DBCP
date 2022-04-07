@@ -3,7 +3,7 @@ import multiprocessing
 from fastapi import FastAPI, APIRouter
 import uvicorn
 
-from endpoints import cities, storetypes, stores
+from endpoints import cities, storetypes, stores, products
 
 server_process = None
 
@@ -12,6 +12,7 @@ router = APIRouter()
 app.include_router(cities.router)
 app.include_router(storetypes.router)
 app.include_router(stores.router)
+app.include_router(products.router)
 
 def start_server():
     global server_process
