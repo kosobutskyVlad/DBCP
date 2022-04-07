@@ -50,7 +50,7 @@ def get_product(product_id: str):
     raise HTTPException(status_code=404, detail=f"{product_id} not found")
 
 @router.post("/add-product/{product_id}")
-def get_product(product_id: str, product_name: str, hierarchy_code: str,
+def add_product(product_id: str, product_name: str, hierarchy_code: str,
                 price: float, product_length: float, product_depth: float,
                 product_width: float):
 

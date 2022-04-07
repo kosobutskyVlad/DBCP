@@ -49,7 +49,7 @@ def get_storetype(storetype_id: str):
     raise HTTPException(status_code=404, detail=f"{storetype_id} not found")
 
 @router.post("/add-storetype/{storetype_id}")
-def get_storetype(storetype_id: str, storetype_description: str):
+def add_storetype(storetype_id: str, storetype_description: str):
 
     conn = pyodbc.connect(
         "Driver={SQL Server Native Client 11.0};"

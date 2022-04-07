@@ -50,7 +50,7 @@ def get_city(city_id: str):
     raise HTTPException(status_code=404, detail=f"{city_id} not found")
 
 @router.post("/add-city/{city_id}")
-def get_city(city_id: str, city_name: str, city_size: str, country: str):
+def add_city(city_id: str, city_name: str, city_size: str, country: str):
 
     conn = pyodbc.connect(
         "Driver={SQL Server Native Client 11.0};"

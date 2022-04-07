@@ -50,7 +50,7 @@ def get_store(store_id: str):
     raise HTTPException(status_code=404, detail=f"{store_id} not found")
 
 @router.post("/add-store/{store_id}")
-def get_store(store_id: str, storetype_id: str, store_size: int, city_id: str):
+def add_store(store_id: str, storetype_id: str, store_size: int, city_id: str):
 
     conn = pyodbc.connect(
         "Driver={SQL Server Native Client 11.0};"
