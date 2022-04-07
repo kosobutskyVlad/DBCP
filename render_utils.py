@@ -22,7 +22,7 @@ def start_window(width: int, height: int, window_name: str, render_function):
     glfw.terminate()
     
 
-def render_frame(impl, window, render_function: function):
+def render_frame(impl, window, render_function):
     """
     impl: GlfwRenderer
     window: GLFWwindow object
