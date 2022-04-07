@@ -4,7 +4,7 @@ import OpenGL.GL as gl
 import imgui
 
 from render_utils import *
-from server import *
+from server_process import *
 
 server_status = "offline"
 
