@@ -40,8 +40,8 @@ CREATE TABLE Products (
 DROP TABLE IF EXISTS LossFunctionParameters;
 CREATE TABLE LossFunctionParameters (
 	parameters_id INT PRIMARY KEY IDENTITY(1, 1),
-	product_id CHAR(5),
 	store_id CHAR(5),
+	product_id CHAR(5),
 	loyalty_charge_x FLOAT,
 	loyalty_charge_coef FLOAT,
 	storage_cost_coef FLOAT,
