@@ -7,11 +7,11 @@ from fastapi import APIRouter, HTTPException
 class Product(BaseModel):
     product_id: str
     product_name: str
-    hierarchy_code: Optional[str]
-    price: Optional[float]
-    product_length: Optional[float]
-    product_depth: Optional[float]
-    product_width: Optional[float]
+    hierarchy_code: Optional[str] = None
+    price: Optional[float] = None
+    product_length: Optional[float] = None
+    product_depth: Optional[float] = None
+    product_width: Optional[float] = None
 
 router = APIRouter(
     prefix="/products",

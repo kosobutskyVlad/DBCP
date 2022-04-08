@@ -8,11 +8,11 @@ from fastapi import APIRouter, HTTPException
 class Purchase(BaseModel):
     store_id: str
     product_id: str
-    purchase_date: Optional[date]
-    price: Optional[float]
-    sales: Optional[int]
-    discount: Optional[float]
-    revenue: Optional[float]
+    purchase_date: Optional[date] = None
+    price: Optional[float] = None
+    sales: Optional[int] = None
+    discount: Optional[float] = None
+    revenue: Optional[float] = None
 
 router = APIRouter(
     prefix="/purchases",
