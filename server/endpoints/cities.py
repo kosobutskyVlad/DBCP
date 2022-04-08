@@ -6,9 +6,9 @@ from fastapi import APIRouter, HTTPException
 
 class City(BaseModel):
     city_id: str
-    city_name: str
-    city_size: str
-    country: str
+    city_name: Optional[str]
+    city_size: Optional[str]
+    country: Optional[str]
 
 router = APIRouter(
     prefix="/cities",
@@ -54,9 +54,8 @@ def get_city(city_id: str):
 
     raise HTTPException(status_code=404, detail=f"{city_id} not found")
 
-@router.post("/add-city/{city_id}")
-def add_city(city_id: str, city_name: str,
-             city_size: str, country: str):
+@router.post("/add-city")
+def add_city(city: City):
 
     conn = pyodbc.connect(
         "Driver={SQL Server Native Client 11.0};"
@@ -66,7 +65,7 @@ def add_city(city_id: str, city_name: str,
 
     cursor = conn.cursor()
     cursor.execute(f"SELECT city_id FROM Cities \
-                    WHERE city_id = '{city_id}'")
+                    WHERE city_id = '{city.city_id}'")
     data = []
     for row in cursor:
         data.append(list(row))
@@ -74,14 +73,17 @@ def add_city(city_id: str, city_name: str,
     if data:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"{city_id} already exists")
+                            detail=f"{city.city_id} already exists")
 
-    cursor.execute(f"INSERT INTO Cities VALUES('{city_id}', \
-                   '{city_name}', '{city_size}', '{country}')")
+    cursor.execute(f"INSERT INTO Cities VALUES('{city.city_id[:4]}', \
+                   '{city.city_name[:50]}', '{city.city_size[:10]}', \
+                   '{city.country[:50]}')")
     conn.commit()
     conn.close()
-    return {"city_id": city_id, "city_name": city_name,
-            "city_size": city_size, "country": country}
+    return {"city_id": city.city_id[:4],
+            "city_name": city.city_name[:50],
+            "city_size": city.city_size[:10],
+            "country": city.country[:50]}
 
 @router.put("/update-city")
 def update_city(city: City):
