@@ -1,7 +1,17 @@
 from typing import Optional
 
 import pyodbc
+from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException
+
+class Product(BaseModel):
+    product_id: str
+    product_name: str
+    hierarchy_code: Optional[str]
+    price: Optional[float]
+    product_length: Optional[float]
+    product_depth: Optional[float]
+    product_width: Optional[float]
 
 router = APIRouter(
     prefix="/products",
@@ -49,11 +59,8 @@ def get_product(product_id: str):
     raise HTTPException(status_code=404,
                         detail=f"{product_id} not found")
 
-@router.post("/add-product/{product_id}")
-def add_product(product_id: str, product_name: str,
-                hierarchy_code: str, price: float,
-                product_length: float, product_depth: float,
-                product_width: float):
+@router.post("/add-product")
+def add_product(product: Product):
 
     conn = pyodbc.connect(
         "Driver={SQL Server Native Client 11.0};"
@@ -63,7 +70,7 @@ def add_product(product_id: str, product_name: str,
 
     cursor = conn.cursor()
     cursor.execute(f"SELECT product_id FROM Products \
-                   WHERE product_id = '{product_id}'")
+                   WHERE product_id = '{product.product_id[:5]}'")
     data = []
     for row in cursor:
         data.append(list(row))
@@ -71,30 +78,29 @@ def add_product(product_id: str, product_name: str,
     if data:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"{product_id} already exists")
+                            detail=f"{product.product_id[:5]} \
+                            already exists")
 
-    cursor.execute(f"INSERT INTO Products VALUES('{product_id}', \
-                   '{product_name}', '{hierarchy_code}', '{price}', \
-                   '{product_length}', '{product_depth}', \
-                   '{product_width}')")
+    cursor.execute(f"INSERT INTO Products \
+                   VALUES('{product.product_id[:5]}', \
+                   '{product.product_name[:50]}', \
+                   '{product.hierarchy_code[:10]}', \
+                   '{product.price}', \
+                   '{product.product_length}', \
+                   '{product.product_depth}', \
+                   '{product.product_width}')")
     conn.commit()
     conn.close()
-    return {"product_id": product_id,
-            "product_description": product_name,
-            "hierarchy_code": hierarchy_code,
-            "price": price,
-            "product_length": product_length,
-            "product_depth": product_depth,
-            "product_width": product_width}
+    return {"product_id": product.product_id[:5],
+            "product_description": product.product_name[:50],
+            "hierarchy_code": product.hierarchy_code[:10],
+            "price": product.price,
+            "product_length": product.product_length,
+            "product_depth": product.product_depth,
+            "product_width": product.product_width}
 
-@router.put("/update-product/{product_id}")
-def update_product(product_id: str,
-                   product_name: Optional[str] = None,
-                   hierarchy_code: Optional[str] = None,
-                   price: Optional[float] = None,
-                   product_length: Optional[float] = None,
-                   product_depth: Optional[float] = None,
-                   product_width: Optional[float] = None):
+@router.put("/update-product")
+def update_product(product: Product):
 
     conn = pyodbc.connect(
         "Driver={SQL Server Native Client 11.0};"
@@ -104,7 +110,7 @@ def update_product(product_id: str,
 
     cursor = conn.cursor()
     cursor.execute(f"SELECT product_id FROM Products \
-                   WHERE product_id = '{product_id}'")
+                   WHERE product_id = '{product.product_id}'")
     data = []
     for row in cursor:
         data.append(list(row))
@@ -112,21 +118,22 @@ def update_product(product_id: str,
     if not data:
         conn.close()
         raise HTTPException(status_code=404,
-                            detail=f"{product_id} not found")
+                            detail=f"{product.product_id} not found")
 
     update = []
-    if product_name is not None:
-        update.append(f"product_name = '{product_name}'")
-    if hierarchy_code is not None:
-        update.append(f"hierarchy_code = '{hierarchy_code}'")
-    if price is not None:
-        update.append(f"price = '{price}'")
-    if product_length is not None:
-        update.append(f"product_length = '{product_length}'")
-    if product_depth is not None:
-        update.append(f"product_depth = '{product_depth}'")
-    if product_width is not None:
-        update.append(f"product_width = '{product_width}'")
+    if product.product_name is not None:
+        update.append(f"product_name = '{product.product_name[:50]}'")
+    if product.hierarchy_code is not None:
+        update.append(f"hierarchy_code = \
+                      '{product.hierarchy_code[:10]}'")
+    if product.price is not None:
+        update.append(f"price = '{product.price}'")
+    if product.product_length is not None:
+        update.append(f"product_length = '{product.product_length}'")
+    if product.product_depth is not None:
+        update.append(f"product_depth = '{product.product_depth}'")
+    if product.product_width is not None:
+        update.append(f"product_width = '{product.product_width}'")
     if not update:
         conn.close()
         raise HTTPException(status_code=422,
@@ -134,11 +141,11 @@ def update_product(product_id: str,
 
     cursor = conn.cursor()
     cursor.execute(f"UPDATE Products SET {', '.join(update)} \
-                   WHERE product_id = '{product_id}'")
+                   WHERE product_id = '{product.product_id}'")
     conn.commit()
 
     cursor.execute(f"SELECT * FROM Products \
-                   WHERE product_id = '{product_id}'")
+                   WHERE product_id = '{product.product_id}'")
     data = []
     for row in cursor:
         data.append(list(row))
