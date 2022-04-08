@@ -109,16 +109,17 @@ def add_parameters(parameters: Parameters):
     if data:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"{parameters.store_id} and \
-                            {parameters.product_id} \
+                            detail=f"{parameters.store_id[:5]} and \
+                            {parameters.product_id[:5]} \
                             parameters already exist")
 
     cursor.execute(f"INSERT INTO LossFunctionParameters( \
                    store_id, product_id, loyalty_charge_x, \
                    loyalty_charge_coef, storage_cost_coef, \
                    bank_rate_x, bank_rate_coef, product_cost_x, \
-                   product_cost_coef) VALUES('{parameters.store_id}', \
-                   '{parameters.product_id}', \
+                   product_cost_coef) \
+                   VALUES('{parameters.store_id[:5]}', \
+                   '{parameters.product_id[:5]}', \
                    '{parameters.loyalty_charge_x}', \
                    '{parameters.loyalty_charge_coef}', \
                    '{parameters.storage_cost_coef}', \
@@ -128,8 +129,8 @@ def add_parameters(parameters: Parameters):
                    '{parameters.product_cost_coef}')")
     conn.commit()
     conn.close()
-    return {"store_id": parameters.store_id,
-            "product_id": parameters.product_id,
+    return {"store_id": parameters.store_id[:5],
+            "product_id": parameters.product_id[:5],
             "loyalty_charge_x": parameters.loyalty_charge_x,
             "loyalty_charge_coef": parameters.loyalty_charge_coef,
             "storage_cost_coef": parameters.storage_cost_coef,

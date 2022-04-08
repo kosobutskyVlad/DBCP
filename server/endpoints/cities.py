@@ -65,7 +65,7 @@ def add_city(city: City):
 
     cursor = conn.cursor()
     cursor.execute(f"SELECT city_id FROM Cities \
-                    WHERE city_id = '{city.city_id}'")
+                    WHERE city_id = '{city.city_id[:4]}'")
     data = []
     for row in cursor:
         data.append(list(row))
@@ -73,7 +73,7 @@ def add_city(city: City):
     if data:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"{city.city_id} already exists")
+                            detail=f"{city.city_id[:4]} already exists")
 
     cursor.execute(f"INSERT INTO Cities VALUES('{city.city_id[:4]}', \
                    '{city.city_name[:50]}', '{city.city_size[:10]}', \

@@ -2,7 +2,17 @@ from datetime import date
 from typing import Optional
 
 import pyodbc
+from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException
+
+class Purchase(BaseModel):
+    store_id: str
+    product_id: str
+    purchase_date: Optional[date]
+    price: Optional[float]
+    sales: Optional[int]
+    discount: Optional[float]
+    revenue: Optional[float]
 
 router = APIRouter(
     prefix="/purchases",
@@ -53,9 +63,7 @@ def get_purchases(store_id: str, product_id: str):
                         not found")
 
 @router.post("/add-purchase")
-def add_purchase(store_id: str, product_id: str,
-                 purchase_date: date, price: float,
-                 sales: int, discount: float, revenue: float):
+def add_purchase(purchase: Purchase):
 
     conn = pyodbc.connect(
         "Driver={SQL Server Native Client 11.0};"
@@ -66,7 +74,7 @@ def add_purchase(store_id: str, product_id: str,
     cursor = conn.cursor()
 
     cursor.execute(f"SELECT store_id FROM Stores \
-                   WHERE store_id = '{store_id}'")
+                   WHERE store_id = '{purchase.store_id}'")
     data = []
     for row in cursor:
         data.append(list(row))
@@ -74,10 +82,11 @@ def add_purchase(store_id: str, product_id: str,
     if not data:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"{store_id} does not exist")
+                            detail=f"{purchase.store_id} \
+                            does not exist")
 
     cursor.execute(f"SELECT product_id FROM Products \
-                   WHERE product_id = '{product_id}'")
+                   WHERE product_id = '{purchase.product_id}'")
     data = []
     for row in cursor:
         data.append(list(row))
@@ -85,11 +94,12 @@ def add_purchase(store_id: str, product_id: str,
     if not data:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"{product_id} does not exist")
+                            detail=f"{purchase.product_id} \
+                            does not exist")
 
     cursor.execute(f"SELECT store_id, product_id FROM Purchases \
-                   WHERE store_id = '{store_id}' \
-                   AND product_id = '{product_id}'")
+                   WHERE store_id = '{purchase.store_id}' \
+                   AND product_id = '{purchase.product_id}'")
     data = []
     for row in cursor:
         data.append(list(row))
@@ -97,23 +107,28 @@ def add_purchase(store_id: str, product_id: str,
     if data:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"{store_id} and {product_id} \
+                            detail=f"{purchase.store_id} \
+                            and {purchase.product_id} \
                             already exists")
 
     cursor.execute(f"INSERT INTO Purchases(store_id, product_id, \
                    purchase_date, price, sales, discount, \
-                   revenue) VALUES('{store_id}', '{product_id}', \
-                   '{purchase_date}', '{price}', '{sales}', \
-                   '{discount}', '{revenue}')")
+                   revenue) VALUES('{purchase.store_id}', \
+                   '{purchase.product_id}', \
+                   '{purchase.purchase_date}', \
+                   '{purchase.price}', \
+                   '{purchase.sales}', \
+                   '{purchase.discount}', \
+                   '{purchase.revenue}')")
     conn.commit()
     conn.close()
-    return {"store_id": store_id,
-            "product_id": product_id,
-            "purchase_date": purchase_date,
-            "price": price,
-            "sales": sales,
-            "discount": discount,
-            "revenue": revenue}
+    return {"store_id": purchase.store_id,
+            "product_id": purchase.product_id,
+            "purchase_date": purchase.purchase_date,
+            "price": purchase.price,
+            "sales": purchase.sales,
+            "discount": purchase.discount,
+            "revenue": purchase.revenue}
 
 @router.delete("/delete-purchase/{purchase_id}")
 def delete_purchase(purchase_id: int):
