@@ -3,12 +3,13 @@ import sys
 import OpenGL.GL as gl
 import imgui
 
-from render_utils import *
-from client_render import *
+from render_utils import start_window
+from client_render import main_menu_frame
+from test_window import show_test_window
 
 host = "127.0.0.1"
 port = "5001"
-client_running = True
+client_running = False
 prev_host = host
 prev_port = port
 
@@ -46,13 +47,10 @@ def frame_client():
     imgui.end()
 
     if client_running:
-        imgui.begin("Main menu")
-        imgui.text("client")
-        imgui.end()
-
-
+        main_menu_frame(host, port)
 
 def main():
+    #start_window(1600, 900, "Sales Forecasting: Client", show_test_window)
     start_window(1600, 900, "Sales Forecasting: Client", frame_client)
 
 if __name__ == '__main__':
