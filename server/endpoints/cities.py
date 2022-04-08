@@ -1,14 +1,14 @@
 from typing import Optional
-from pydantic import BaseModel
 
 import pyodbc
+from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException
 
 class City(BaseModel):
     city_id: str
-    city_name: Optional[str]
-    city_size: Optional[str]
-    country: Optional[str]
+    city_name: Optional[str] = None
+    city_size: Optional[str] = None
+    country: Optional[str] = None
 
 router = APIRouter(
     prefix="/cities",
