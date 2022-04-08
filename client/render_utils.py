@@ -40,6 +40,7 @@ def render_frame(impl, window, render_function):
     imgui.render()
     impl.render(imgui.get_draw_data())
     glfw.swap_buffers(window)
+    glfw.wait_events()
     
 
 def impl_glfw_init(width: int, height: int, window_name: str):
