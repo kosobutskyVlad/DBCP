@@ -144,8 +144,14 @@ def delete_storetype(storetype_id: str):
         raise HTTPException(status_code=404,
                             detail=f"{storetype_id} not found")
 
-    cursor.execute(f"DELETE FROM StoreTypes \
+    try:
+        cursor.execute(f"DELETE FROM StoreTypes \
                    WHERE storetype_id = '{storetype_id}'")
-    conn.commit()
-    conn.close()
+        conn.commit()
+    except pyodbc.IntegrityError:
+        raise HTTPException(status_code=409,
+                            detail=f"{storetype_id} is being \
+                            referenced by a foreign key")
+    finally:
+        conn.close()
     return {"storetype_id": storetype_id, "is_deleted": True}
