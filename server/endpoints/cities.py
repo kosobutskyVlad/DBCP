@@ -152,8 +152,13 @@ def delete_city(city_id: str):
         conn.close()
         raise HTTPException(status_code=404,
                             detail=f"{city_id} not found")
+    try:
+        cursor.execute(f"DELETE FROM Cities WHERE city_id = '{city_id}'")
+    except pyodbc.IntegrityError:
+        return HTTPException(status_code=422,
+                            detail=f"{city_id} is being referenced \
+                            by a foreign key")
 
-    cursor.execute(f"DELETE FROM Cities WHERE city_id = '{city_id}'")
     conn.commit()
     conn.close()
     return {"city_id": city_id, "is_deleted": True}
