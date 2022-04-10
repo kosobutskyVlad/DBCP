@@ -2,18 +2,13 @@ import requests
 
 import imgui
 
-get_cities_response = False
-show_cities_selectable = False
-cities_selectable = {}
+response_get_cities = None
+show_selectable_cities = False
+selectable_cities = {}
 cities_info = {}
 cities_refresh = {}
 cities_changed = {}
 
-button_clicked_update_cities = False
-
-button_clicked_delete_cities = False
-
-button_clicked_add_city = False
 info_add_city = {
     "city_id": "",
     "city_name": "",
@@ -22,42 +17,41 @@ info_add_city = {
 }
 
 def cities_frame(host: str, port: int):
-    global get_cities_response
-    global cities_selectable
-    global show_cities_selectable
+    global response_get_cities
+    global show_selectable_cities
+    global selectable_cities
+    
     global cities_info
     global cities_refresh
     global cities_changed
-    global button_clicked_update_cities
-    global button_clicked_delete_cities
     global info_add_city
 
     imgui.begin("Cities")
 
     if imgui.button("Load cities list"):
-        get_cities_response = requests.get(f"http://{host}:{port}/cities/get-cities")
-        if get_cities_response.status_code == 200:
-            cities_selectable = {city[0]: False for city in get_cities_response.json()["cities"]}
-            cities_refresh = {city[0]: True for city in get_cities_response.json()["cities"]}
-            cities_changed = {city[0]: False for city in get_cities_response.json()["cities"]}
-            show_cities_selectable = False
+        response_get_cities = requests.get(f"http://{host}:{port}/cities/get-cities")
+        if response_get_cities.status_code == 200:
+            selectable_cities = {city[0]: False for city in response_get_cities.json()["cities"]}
+            cities_refresh = {city[0]: True for city in response_get_cities.json()["cities"]}
+            cities_changed = {city[0]: False for city in response_get_cities.json()["cities"]}
+            show_selectable_cities = False
 
     if imgui.button("Show cities list"):
-        if get_cities_response.status_code == 200:
-            show_cities_selectable = True
+        if response_get_cities.status_code == 200:
+            show_selectable_cities = True
     
-    if show_cities_selectable:
+    if show_selectable_cities:
         imgui.columns(count=5, identifier=None, border=False)
-        for city in get_cities_response.json()["cities"]:
+        for city in response_get_cities.json()["cities"]:
             label = city[0]
-            _, cities_selectable[city[0]] = imgui.selectable(
-                label=label, selected=cities_selectable[city[0]]
+            _, selectable_cities[city[0]] = imgui.selectable(
+                label=label, selected=selectable_cities[city[0]]
             )
             imgui.next_column()
         imgui.columns(1)
 
-    for city in cities_selectable:
-        if cities_selectable[city]:
+    for city in selectable_cities:
+        if selectable_cities[city]:
             if cities_refresh[city]:
                 cities_refresh[city] = False
                 get_city_response = requests.get(f"http://{host}:{port}/cities/get-city/{city}")
@@ -93,14 +87,14 @@ def cities_frame(host: str, port: int):
         button_clicked_update_cities = False
         for city in cities_changed:
             if cities_changed[city]:
-                update_response = requests.put(f"http://{host}:{port}/cities/update-city", json={"city_id": city, "city_name": cities_info[city]["city_name"], "city_size": cities_info[city]["city_size"], "country": cities_info[city]["country"]})
+                response_update_city = requests.put(f"http://{host}:{port}/cities/update-city", json={"city_id": city, "city_name": cities_info[city]["city_name"], "city_size": cities_info[city]["city_size"], "country": cities_info[city]["country"]})
 
     button_clicked_delete_cities = imgui.button("Delete cities")
     if button_clicked_delete_cities:
         button_clicked_delete_cities = False
-        for city in cities_selectable:
-            if cities_selectable[city]:
-                delete_response = requests.delete(f"http://{host}:{port}/cities/delete-city/{city}")
+        for city in selectable_cities:
+            if selectable_cities[city]:
+                response_delete_city = requests.delete(f"http://{host}:{port}/cities/delete-city/{city}")
 
     imgui.push_item_width(50)
     _, info_add_city["city_id"] = imgui.input_text("Add city_id", info_add_city["city_id"], 5)
@@ -122,6 +116,6 @@ def cities_frame(host: str, port: int):
     button_clicked_add_city = imgui.button("Add a city")
     if button_clicked_add_city:
         button_clicked_add_city = False
-        post_response = requests.post(f"http://{host}:{port}/cities/add-city", json=info_add_city)
+        response_add_city = requests.post(f"http://{host}:{port}/cities/add-city", json=info_add_city)
 
     imgui.end()
