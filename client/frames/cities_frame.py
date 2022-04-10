@@ -69,7 +69,7 @@ def cities_frame(host: str, port: int):
         for city in cities_list:
             label = city[0]
             _, selectable_cities[city[0]] = imgui.selectable(
-                label=label, selected=selectable_cities[city[0]])
+                label, selectable_cities[city[0]])
             imgui.next_column()
         imgui.columns(1)
 
@@ -79,7 +79,6 @@ def cities_frame(host: str, port: int):
                 cities_refresh[city] = False
                 get_city_response = requests.get(
                     f"http://{host}:{port}/cities/get-city/{city}")
-                #imgui.begin_popup_modal()
                 info = get_city_response.json()["Data"][0]
                 cities_info[city] = {"city_name": info[1][:50],
                                      "city_size": info[2][:10],

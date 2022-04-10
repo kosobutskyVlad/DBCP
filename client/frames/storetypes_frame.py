@@ -40,9 +40,12 @@ def storetypes_frame(host: str, port: int):
         if response_get_storetypes.status_code == 200:
             storetypes_list = response_get_storetypes.json()["storetypes"]
 
-            selectable_storetypes = {storetype[0]: False for storetype in storetypes_list}
-            storetypes_refresh = {storetype[0]: True for storetype in storetypes_list}
-            storetypes_changed = {storetype[0]: False for storetype in storetypes_list}
+            selectable_storetypes = {storetype[0]: False for storetype
+                                     in storetypes_list}
+            storetypes_refresh = {storetype[0]: True for storetype
+                                  in storetypes_list}
+            storetypes_changed = {storetype[0]: False for storetype
+                                  in storetypes_list}
             show_selectable_storetypes = False
 
     if imgui.button("Show storetypes list"):
@@ -67,7 +70,7 @@ def storetypes_frame(host: str, port: int):
         for storetype in storetypes_list:
             label = storetype[0]
             _, selectable_storetypes[storetype[0]] = imgui.selectable(
-                label=label, selected=selectable_storetypes[storetype[0]])
+                label, selectable_storetypes[storetype[0]])
             imgui.next_column()
         imgui.columns(1)
 
@@ -77,11 +80,12 @@ def storetypes_frame(host: str, port: int):
                 storetypes_refresh[storetype] = False
                 get_storetype_response = requests.get(
                     f"http://{host}:{port}/storetypes/get-storetype/{storetype}")
-                #imgui.begin_popup_modal()
                 info = get_storetype_response.json()["Data"][0]
-                storetypes_info[storetype] = {"storetype_description": info[1][:100]}
+                storetypes_info[storetype] = {
+                    "storetype_description": info[1][:100]}
             
-            imgui.begin_child("storetypes_editor", 1200, 200, border=True)
+            imgui.begin_child("storetypes_editor",
+                              1200, 200, border=True)
             imgui.text(storetype)
             imgui.same_line()
             imgui.push_item_width(600)
@@ -131,7 +135,8 @@ def storetypes_frame(host: str, port: int):
     imgui.same_line()
     imgui.push_item_width(600)
     _, info_add_storetype["storetype_description"] = imgui.input_text(
-        f"Add storetype_description", info_add_storetype["storetype_description"], 101)
+        f"Add storetype_description",
+        info_add_storetype["storetype_description"], 101)
     imgui.pop_item_width()
     imgui.same_line()
 
@@ -139,6 +144,7 @@ def storetypes_frame(host: str, port: int):
     if button_clicked_add_storetype:
         button_clicked_add_storetype = False
         response_add_storetype = requests.post(
-            f"http://{host}:{port}/storetypes/add-storetype", json=info_add_storetype)
+            f"http://{host}:{port}/storetypes/add-storetype",
+            json=info_add_storetype)
 
     imgui.end()
