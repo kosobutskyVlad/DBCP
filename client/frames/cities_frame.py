@@ -11,7 +11,8 @@ cities_info = {}
 cities_refresh = {}
 cities_changed = {}
 
-show_delete_error_popup = False
+show_popup_get_cities_error = False
+show_popup_delete_error = False
 
 info_add_city = {
     "city_id": "",
@@ -30,7 +31,8 @@ def cities_frame(host: str, port: int):
     global cities_changed
     global info_add_city
 
-    global show_delete_error_popup
+    global show_popup_get_cities_error
+    global show_popup_delete_error
 
     imgui.begin("Cities")
 
@@ -47,9 +49,22 @@ def cities_frame(host: str, port: int):
             show_selectable_cities = False
 
     if imgui.button("Show cities list"):
-        if response_get_cities.status_code == 200:
-            show_selectable_cities = True
+        if response_get_cities:
+            if response_get_cities.status_code == 200:
+                show_selectable_cities = True
+        else:
+            show_popup_get_cities_error = True
     
+    if show_popup_get_cities_error:
+        imgui.open_popup("Error")
+    if imgui.begin_popup_modal("Error")[0]:
+        imgui.text("Load the cities list.")
+
+        if imgui.button(label="Close"):
+            imgui.close_current_popup()
+            show_popup_get_cities_error = False
+        imgui.end_popup()
+
     if show_selectable_cities:
         imgui.columns(count=15, identifier=None, border=False)
         for city in cities_list:
@@ -105,16 +120,16 @@ def cities_frame(host: str, port: int):
             if selectable_cities[city]:
                 response_delete_city = requests.delete(f"http://{host}:{port}/cities/delete-city/{city}")
                 if response_delete_city.status_code == 409:
-                    show_delete_error_popup = True
+                    show_popup_delete_error = True
     
-    if show_delete_error_popup:
+    if show_popup_delete_error:
         imgui.open_popup("Integrity Error")
     if imgui.begin_popup_modal("Integrity Error")[0]:
         imgui.text(f"Record {city} could not be deleted because it is being referenced by a foreign key.")
 
         if imgui.button(label="Close"):
             imgui.close_current_popup()
-            show_delete_error_popup = False
+            show_popup_delete_error = False
         imgui.end_popup()
 
     imgui.push_item_width(50)
