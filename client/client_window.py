@@ -4,7 +4,7 @@ import OpenGL.GL as gl
 import imgui
 
 from render_utils import start_window
-from client_render import main_menu_frame
+from frames.main_menu_frame import main_menu_frame
 from test_window import show_test_window
 
 host = "127.0.0.1"
