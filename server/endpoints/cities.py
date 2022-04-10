@@ -155,7 +155,7 @@ def delete_city(city_id: str):
     try:
         cursor.execute(f"DELETE FROM Cities WHERE city_id = '{city_id}'")
     except pyodbc.IntegrityError:
-        return HTTPException(status_code=422,
+        return HTTPException(status_code=409,
                             detail=f"{city_id} is being referenced \
                             by a foreign key")
 

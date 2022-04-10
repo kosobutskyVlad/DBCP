@@ -1,8 +1,10 @@
+from regex import S
 import requests
 
 import imgui
 
 response_get_cities = None
+cities_list = []
 show_selectable_cities = False
 selectable_cities = {}
 cities_info = {}
@@ -18,9 +20,9 @@ info_add_city = {
 
 def cities_frame(host: str, port: int):
     global response_get_cities
+    global cities_list
     global show_selectable_cities
     global selectable_cities
-    
     global cities_info
     global cities_refresh
     global cities_changed
@@ -29,11 +31,15 @@ def cities_frame(host: str, port: int):
     imgui.begin("Cities")
 
     if imgui.button("Load cities list"):
-        response_get_cities = requests.get(f"http://{host}:{port}/cities/get-cities")
+        response_get_cities = requests.get(
+            f"http://{host}:{port}/cities/get-cities")
+        
         if response_get_cities.status_code == 200:
-            selectable_cities = {city[0]: False for city in response_get_cities.json()["cities"]}
-            cities_refresh = {city[0]: True for city in response_get_cities.json()["cities"]}
-            cities_changed = {city[0]: False for city in response_get_cities.json()["cities"]}
+            cities_list = response_get_cities.json()["cities"]
+
+            selectable_cities = {city[0]: False for city in cities_list}
+            cities_refresh = {city[0]: True for city in cities_list}
+            cities_changed = {city[0]: False for city in cities_list}
             show_selectable_cities = False
 
     if imgui.button("Show cities list"):
@@ -41,12 +47,11 @@ def cities_frame(host: str, port: int):
             show_selectable_cities = True
     
     if show_selectable_cities:
-        imgui.columns(count=5, identifier=None, border=False)
-        for city in response_get_cities.json()["cities"]:
+        imgui.columns(count=15, identifier=None, border=False)
+        for city in cities_list:
             label = city[0]
             _, selectable_cities[city[0]] = imgui.selectable(
-                label=label, selected=selectable_cities[city[0]]
-            )
+                label=label, selected=selectable_cities[city[0]])
             imgui.next_column()
         imgui.columns(1)
 
@@ -54,13 +59,13 @@ def cities_frame(host: str, port: int):
         if selectable_cities[city]:
             if cities_refresh[city]:
                 cities_refresh[city] = False
-                get_city_response = requests.get(f"http://{host}:{port}/cities/get-city/{city}")
+                get_city_response = requests.get(
+                    f"http://{host}:{port}/cities/get-city/{city}")
                 #imgui.begin_popup_modal()
                 info = get_city_response.json()["Data"][0]
                 cities_info[city] = {"city_name": info[1][:50], "city_size": info[2][:10], "country": info[3][:50]}
             
-            imgui.begin_child("cities_editor", 1000, 200, border=True)
-
+            imgui.begin_child("cities_editor", 1200, 200, border=True)
             imgui.text(city)
             imgui.same_line()
             imgui.push_item_width(300)
@@ -95,6 +100,9 @@ def cities_frame(host: str, port: int):
         for city in selectable_cities:
             if selectable_cities[city]:
                 response_delete_city = requests.delete(f"http://{host}:{port}/cities/delete-city/{city}")
+                if response_delete_city.status_code == 409:
+                    imgui.begin_popup_modal()
+                    imgui.text(f"Record {city} could not be deleted because it is being referenced by a foreign key.")
 
     imgui.push_item_width(50)
     _, info_add_city["city_id"] = imgui.input_text("Add city_id", info_add_city["city_id"], 5)
