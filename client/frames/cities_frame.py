@@ -11,6 +11,8 @@ cities_info = {}
 cities_refresh = {}
 cities_changed = {}
 
+show_delete_error_popup = False
+
 info_add_city = {
     "city_id": "",
     "city_name": "",
@@ -27,6 +29,8 @@ def cities_frame(host: str, port: int):
     global cities_refresh
     global cities_changed
     global info_add_city
+
+    global show_delete_error_popup
 
     imgui.begin("Cities")
 
@@ -101,8 +105,17 @@ def cities_frame(host: str, port: int):
             if selectable_cities[city]:
                 response_delete_city = requests.delete(f"http://{host}:{port}/cities/delete-city/{city}")
                 if response_delete_city.status_code == 409:
-                    imgui.begin_popup_modal()
-                    imgui.text(f"Record {city} could not be deleted because it is being referenced by a foreign key.")
+                    show_delete_error_popup = True
+    
+    if show_delete_error_popup:
+        imgui.open_popup("Integrity Error")
+    if imgui.begin_popup_modal("Integrity Error")[0]:
+        imgui.text(f"Record {city} could not be deleted because it is being referenced by a foreign key.")
+
+        if imgui.button(label="Close"):
+            imgui.close_current_popup()
+            show_delete_error_popup = False
+        imgui.end_popup()
 
     imgui.push_item_width(50)
     _, info_add_city["city_id"] = imgui.input_text("Add city_id", info_add_city["city_id"], 5)
