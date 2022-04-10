@@ -1,6 +1,11 @@
 import imgui
 
 from frames.cities_frame import cities_frame
+from frames.storetypes_frame import storetypes_frame
+from frames.stores_frame import stores_frame
+from frames.products_frame import products_frame
+from frames.purchases_frame import purchases_frame
+from frames.parameters_frame import parameters_frame
 
 active = {
     "storetypes": False,
@@ -25,4 +30,17 @@ def main_menu_frame(host, port):
     if active["cities"]:
         cities_frame(host, port)
 
-    
+    if active["storetypes"]:
+        storetypes_frame(host, port)
+
+    if active["stores"]:
+        stores_frame(host, port)
+
+    if active["products"]:
+        products_frame(host, port)
+
+    if active["purchases"]:
+        purchases_frame(host, port)
+
+    if active["parameters"]:
+        parameters_frame(host, port)
