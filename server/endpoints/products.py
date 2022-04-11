@@ -174,8 +174,15 @@ def delete_product(product_id: str):
         raise HTTPException(status_code=404,
                             detail=f"{product_id} not found")
 
-    cursor.execute(f"DELETE FROM Products \
+    try:
+        cursor.execute(f"DELETE FROM Products \
                    WHERE product_id = '{product_id}'")
-    conn.commit()
-    conn.close()
+        conn.commit()
+    except pyodbc.IntegrityError:
+        raise HTTPException(status_code=409,
+                            detail=f"{product_id} is being \
+                            referenced by a foreign key")
+    finally:
+        conn.close()
+
     return {"product_id": product_id, "is_deleted": True}
