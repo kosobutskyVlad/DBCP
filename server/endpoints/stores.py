@@ -202,7 +202,15 @@ def delete_store(store_id: str):
         raise HTTPException(status_code=404,
                             detail=f"{store_id} not found")
 
-    cursor.execute(f"DELETE FROM Stores WHERE store_id = '{store_id}'")
-    conn.commit()
-    conn.close()
+    try:
+        cursor.execute(f"DELETE FROM Stores \
+                   WHERE store_id = '{store_id}'")
+        conn.commit()
+    except pyodbc.IntegrityError:
+        raise HTTPException(status_code=409,
+                            detail=f"{store_id} is being \
+                            referenced by a foreign key")
+    finally:
+        conn.close()
+
     return {"store_id": store_id, "is_deleted": True}
