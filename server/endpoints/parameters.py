@@ -40,7 +40,7 @@ def get_parameters_all():
     return {"parameters": data}
 
 @router.get("/get-parameters")
-def get_parameters(store_id: str, product_id: str):
+def get_parameters(store_id: Optional[str] = None, product_id: Optional[str] = None):
 
     conn = pyodbc.connect(
         "Driver={SQL Server Native Client 11.0};"
@@ -48,17 +48,28 @@ def get_parameters(store_id: str, product_id: str):
         "Database=retail;"
         "Trusted_Connection=yes;")
 
+    where_clause = ""
+    where_conditions = []
+    if store_id:
+        where_conditions.append(f"store_id = '{store_id}'")
+    if product_id:
+        where_conditions.append(f"product_id = '{product_id}'")
+    if where_conditions:
+        where_clause = " AND ".join(where_conditions)
+    else:
+        raise HTTPException(status_code=422,
+                        detail=f"Specify at least one of: store_id; product_id")
+
     cursor = conn.cursor()
     cursor.execute(f"SELECT * FROM LossFunctionParameters \
-                   WHERE store_id = '{store_id}' \
-                   AND product_id = '{product_id}'")
+                   WHERE {where_clause}")
     data = []
     for row in cursor:
         data.append(list(row))
     conn.close()
 
     if data:
-        return {"Data": data}
+        return {"parameters": data}
 
     raise HTTPException(status_code=404,
                         detail=f"{store_id} and {product_id} not found")
