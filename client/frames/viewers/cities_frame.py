@@ -2,7 +2,11 @@ import requests
 
 import imgui
 
-from ..server_down_frame import server_down_frame
+from ..error_popups import (
+    popup_server_down,
+    popup_load_list,
+    popup_already_exists,
+    popup_deletion_rejected)
 
 response_get_cities = None
 cities_list = []
@@ -12,10 +16,12 @@ cities_info = {}
 cities_refresh = {}
 cities_changed = {}
 
-show_popup_server_not_available = False
-show_popup_get_cities_error = False
-show_popup_add_error = False
-show_popup_delete_error = False
+show_popup_server_down = False
+show_popup_load_list = False
+show_popup_already_exists = False
+show_popup_deletion_rejected = False
+item_id = ""
+
 
 info_add_city = {
     "city_id": "",
@@ -34,30 +40,40 @@ def cities_frame(host: str, port: int):
     global cities_changed
     global info_add_city
 
-    global show_popup_server_not_available
-    global show_popup_get_cities_error
-    global show_popup_add_error
-    global show_popup_delete_error
+    global show_popup_server_down
+    global show_popup_load_list
+    global show_popup_already_exists
+    global show_popup_deletion_rejected
+    global item_id
 
     imgui.begin("Cities")
 
-    show_popup_server_not_available = server_down_frame(show_popup_server_not_available)
+    show_popup_server_down = popup_server_down(show_popup_server_down)
+    show_popup_load_list = popup_load_list(
+        show_popup_load_list, "cities")
+    show_popup_already_exists = popup_already_exists(
+        show_popup_already_exists, item_id)
+    show_popup_deletion_rejected = popup_deletion_rejected(
+        show_popup_deletion_rejected, item_id)
 
     if imgui.button("Load cities list"):
         try:
             response_get_cities = requests.get(
                 f"http://{host}:{port}/cities/get-cities")
         except requests.exceptions.ConnectionError:
-            show_popup_server_not_available = True
+            show_popup_server_down = True
             
         
         if response_get_cities:
             if response_get_cities.status_code == 200:
                 cities_list = response_get_cities.json()["cities"]
 
-                selectable_cities = {city[0]: False for city in cities_list}
-                cities_refresh = {city[0]: True for city in cities_list}
-                cities_changed = {city[0]: False for city in cities_list}
+                selectable_cities = {
+                    city[0]: False for city in cities_list}
+                cities_refresh = {
+                    city[0]: True for city in cities_list}
+                cities_changed = {
+                    city[0]: False for city in cities_list}
                 show_selectable_cities = False
 
     if imgui.button("Show cities list"):
@@ -65,19 +81,10 @@ def cities_frame(host: str, port: int):
             if response_get_cities.status_code == 200:
                 show_selectable_cities = True
         else:
-            show_popup_get_cities_error = True
-    
-    if show_popup_get_cities_error:
-        imgui.open_popup("Error")
-    if imgui.begin_popup_modal("Error")[0]:
-        imgui.text("Load the cities list.")
-
-        if imgui.button(label="Close"):
-            imgui.close_current_popup()
-            show_popup_get_cities_error = False
-        imgui.end_popup()
+            show_popup_load_list = True
 
     if show_selectable_cities:
+        imgui.begin_child("cities_list", 1200, 200, border=True)
         imgui.columns(count=15, identifier=None, border=False)
         for city in cities_list:
             label = city[0]
@@ -85,17 +92,31 @@ def cities_frame(host: str, port: int):
                 label, selectable_cities[city[0]])
             imgui.next_column()
         imgui.columns(1)
+        imgui.end_child()
 
     for city in selectable_cities:
         if selectable_cities[city]:
             if cities_refresh[city]:
                 cities_refresh[city] = False
-                get_city_response = requests.get(
-                    f"http://{host}:{port}/cities/get-city/{city}")
-                info = get_city_response.json()["Data"][0]
-                cities_info[city] = {"city_name": info[1][:50],
-                                     "city_size": info[2][:10],
-                                     "country": info[3][:50]}
+                try:
+                    get_city_response = requests.get(
+                        f"http://{host}:{port}/cities/get-city/{city}")
+
+                    info = get_city_response.json()["Data"][0]
+                    cities_info[city] = {"city_name": info[1][:50],
+                                         "city_size": info[2][:10],
+                                         "country": info[3][:50]}
+                except requests.exceptions.ConnectionError:
+                    show_popup_server_down = True
+                    cities_list = []
+                    show_selectable_cities = False
+                    selectable_cities = {}
+                    cities_info = {}
+                    cities_refresh = {}
+                    cities_changed = {}
+            
+            if show_popup_server_down == True:
+                break
             
             imgui.begin_child("cities_editor", 1200, 200, border=True)
             imgui.text(city)
@@ -130,33 +151,29 @@ def cities_frame(host: str, port: int):
         button_clicked_update_cities = False
         for city in cities_changed:
             if cities_changed[city]:
-                response_update_city = requests.put(
-                    f"http://{host}:{port}/cities/update-city",
-                    json={"city_id": city,
-                    "city_name": cities_info[city]["city_name"],
-                    "city_size": cities_info[city]["city_size"],
-                    "country": cities_info[city]["country"]})
+                try:
+                    response_update_city = requests.put(
+                        f"http://{host}:{port}/cities/update-city",
+                        json={"city_id": city,
+                        "city_name": cities_info[city]["city_name"],
+                        "city_size": cities_info[city]["city_size"],
+                        "country": cities_info[city]["country"]})
+                except requests.exceptions.ConnectionError:
+                    show_popup_server_down = True
 
     button_clicked_delete_cities = imgui.button("Delete cities")
     if button_clicked_delete_cities:
         button_clicked_delete_cities = False
         for city in selectable_cities:
             if selectable_cities[city]:
-                response_delete_city = requests.delete(
-                    f"http://{host}:{port}/cities/delete-city/{city}")
-                if response_delete_city.status_code == 409:
-                    show_popup_delete_error = True
-    
-    if show_popup_delete_error:
-        imgui.open_popup("Integrity Error")
-    if imgui.begin_popup_modal("Integrity Error")[0]:
-        imgui.text(f"Record {city} could not be deleted because \
-                   it is being referenced by a foreign key.")
-
-        if imgui.button(label="Close"):
-            imgui.close_current_popup()
-            show_popup_delete_error = False
-        imgui.end_popup()
+                try:
+                    response_delete_city = requests.delete(
+                        f"http://{host}:{port}/cities/delete-city/{city}")
+                    if response_delete_city.status_code == 409:
+                        show_popup_deletion_rejected = True
+                        item_id = city
+                except requests.exceptions.ConnectionError:
+                    show_popup_server_down = True
 
     imgui.push_item_width(50)
     _, info_add_city["city_id"] = imgui.input_text(
@@ -182,20 +199,15 @@ def cities_frame(host: str, port: int):
     button_clicked_add_city = imgui.button("Add a city")
     if button_clicked_add_city:
         button_clicked_add_city = False
-        response_add_city = requests.post(
-            f"http://{host}:{port}/cities/add-city", json=info_add_city)
+        try:
+            response_add_city = requests.post(
+                f"http://{host}:{port}/cities/add-city",
+                json=info_add_city)
 
-        if response_add_city.status_code == 422:
-            show_popup_add_error = True
-
-    if show_popup_add_error:
-        imgui.open_popup("Insertion Error")
-    if imgui.begin_popup_modal("Insertion Error")[0]:
-        imgui.text(f"Record {info_add_city['city_id']} already exists")
-
-        if imgui.button(label="Close"):
-            imgui.close_current_popup()
-            show_popup_add_error = False
-        imgui.end_popup()
+            if response_add_city.status_code == 422:
+                show_popup_already_exists = True
+                item_id = info_add_city["city_id"]
+        except requests.exceptions.ConnectionError:
+                    show_popup_server_down = True
 
     imgui.end()
