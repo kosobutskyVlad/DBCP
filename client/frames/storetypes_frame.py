@@ -11,6 +11,7 @@ storetypes_refresh = {}
 storetypes_changed = {}
 
 show_popup_get_storetypes_error = False
+show_popup_add_error = False
 show_popup_delete_error = False
 
 info_add_storetype = {
@@ -29,6 +30,7 @@ def storetypes_frame(host: str, port: int):
     global info_add_storetype
 
     global show_popup_get_storetypes_error
+    global show_popup_add_error
     global show_popup_delete_error
 
     imgui.begin("Storetypes")
@@ -146,5 +148,19 @@ def storetypes_frame(host: str, port: int):
         response_add_storetype = requests.post(
             f"http://{host}:{port}/storetypes/add-storetype",
             json=info_add_storetype)
+
+        if response_add_storetype.status_code == 422:
+            show_popup_add_error = True
+
+    if show_popup_add_error:
+        imgui.open_popup("Insertion Error")
+    if imgui.begin_popup_modal("Insertion Error")[0]:
+        imgui.text(f"Record {info_add_storetype['storetype_id']} \
+                   already exists")
+
+        if imgui.button(label="Close"):
+            imgui.close_current_popup()
+            show_popup_add_error = False
+        imgui.end_popup()
 
     imgui.end()
