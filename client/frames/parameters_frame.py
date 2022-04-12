@@ -87,7 +87,7 @@ def parameters_frame(host: str, port: int):
         imgui.begin_child("parameters_list", 1200, 200, border=True)
         imgui.columns(count=15, identifier=None, border=False)
         for parameters in parameters_list:
-            label = parameters[2] if input_get_by_product_id else parameters[1]
+            label = parameters[1] if input_get_by_product_id else parameters[2]
             _, selectable_parameters[parameters[0]] = imgui.selectable(
                 label=label, selected=selectable_parameters[parameters[0]])
             imgui.next_column()
@@ -100,8 +100,8 @@ def parameters_frame(host: str, port: int):
                 parameters_refresh[parameters] = False
                 get_parameters_response = requests.get(
                     f"http://{host}:{port}/parameters/get-parameters/",
-                    params={"store_id": input_get_by_store_id or parameters_list[i][2],
-                    "product_id": input_get_by_product_id or parameters_list[i][1]})
+                    params={"store_id": input_get_by_store_id or parameters_list[i][1],
+                    "product_id": input_get_by_product_id or parameters_list[i][2]})
                 info = get_parameters_response.json()["parameters"][0]
                 parameters_info[parameters] = {
                     "store_id": info[1][:5],
