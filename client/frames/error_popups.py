@@ -59,3 +59,15 @@ def popup_deletion_rejected(show: bool, item_id: str):
             show = False
         imgui.end_popup()
     return show
+
+def popup_argument_missing(show: bool):
+    if show:
+        imgui.open_popup(f"Specify ID")
+    if imgui.begin_popup_modal(f"Specify ID")[0]:
+        imgui.text(f"Specify at least one of: store_id, product_id.")
+
+        if imgui.button(label="Close"):
+            imgui.close_current_popup()
+            show = False
+        imgui.end_popup()
+    return show
