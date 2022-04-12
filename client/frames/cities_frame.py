@@ -11,6 +11,7 @@ cities_refresh = {}
 cities_changed = {}
 
 show_popup_get_cities_error = False
+show_popup_add_error = False
 show_popup_delete_error = False
 
 info_add_city = {
@@ -31,6 +32,7 @@ def cities_frame(host: str, port: int):
     global info_add_city
 
     global show_popup_get_cities_error
+    global show_popup_add_error
     global show_popup_delete_error
 
     imgui.begin("Cities")
@@ -171,5 +173,18 @@ def cities_frame(host: str, port: int):
         button_clicked_add_city = False
         response_add_city = requests.post(
             f"http://{host}:{port}/cities/add-city", json=info_add_city)
+
+        if response_add_city.status_code == 422:
+            show_popup_add_error = True
+
+    if show_popup_add_error:
+        imgui.open_popup("Insertion Error")
+    if imgui.begin_popup_modal("Insertion Error")[0]:
+        imgui.text(f"Record {info_add_city['city_id']} already exists")
+
+        if imgui.button(label="Close"):
+            imgui.close_current_popup()
+            show_popup_add_error = False
+        imgui.end_popup()
 
     imgui.end()
