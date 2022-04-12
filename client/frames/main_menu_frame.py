@@ -1,11 +1,11 @@
 import imgui
 
-from frames.cities_frame import cities_frame
-from frames.storetypes_frame import storetypes_frame
-from frames.stores_frame import stores_frame
-from frames.products_frame import products_frame
-from frames.purchases_frame import purchases_frame
-from frames.parameters_frame import parameters_frame
+from frames.viewers.cities_frame import cities_frame
+from frames.viewers.storetypes_frame import storetypes_frame
+from frames.viewers.stores_frame import stores_frame
+from frames.viewers.products_frame import products_frame
+from frames.viewers.purchases_frame import purchases_frame
+from frames.viewers.parameters_frame import parameters_frame
 
 active = {
     "storetypes": False,

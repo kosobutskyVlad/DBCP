@@ -2,6 +2,8 @@ import requests
 
 import imgui
 
+from ..server_down_frame import server_down_frame
+
 response_get_cities = None
 cities_list = []
 show_selectable_cities = False
@@ -10,6 +12,7 @@ cities_info = {}
 cities_refresh = {}
 cities_changed = {}
 
+show_popup_server_not_available = False
 show_popup_get_cities_error = False
 show_popup_add_error = False
 show_popup_delete_error = False
@@ -31,23 +34,31 @@ def cities_frame(host: str, port: int):
     global cities_changed
     global info_add_city
 
+    global show_popup_server_not_available
     global show_popup_get_cities_error
     global show_popup_add_error
     global show_popup_delete_error
 
     imgui.begin("Cities")
 
-    if imgui.button("Load cities list"):
-        response_get_cities = requests.get(
-            f"http://{host}:{port}/cities/get-cities")
-        
-        if response_get_cities.status_code == 200:
-            cities_list = response_get_cities.json()["cities"]
+    show_popup_server_not_available = server_down_frame(show_popup_server_not_available)
 
-            selectable_cities = {city[0]: False for city in cities_list}
-            cities_refresh = {city[0]: True for city in cities_list}
-            cities_changed = {city[0]: False for city in cities_list}
-            show_selectable_cities = False
+    if imgui.button("Load cities list"):
+        try:
+            response_get_cities = requests.get(
+                f"http://{host}:{port}/cities/get-cities")
+        except requests.exceptions.ConnectionError:
+            show_popup_server_not_available = True
+            
+        
+        if response_get_cities:
+            if response_get_cities.status_code == 200:
+                cities_list = response_get_cities.json()["cities"]
+
+                selectable_cities = {city[0]: False for city in cities_list}
+                cities_refresh = {city[0]: True for city in cities_list}
+                cities_changed = {city[0]: False for city in cities_list}
+                show_selectable_cities = False
 
     if imgui.button("Show cities list"):
         if response_get_cities:
