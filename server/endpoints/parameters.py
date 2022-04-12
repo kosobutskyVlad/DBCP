@@ -171,8 +171,7 @@ def update_parameters(parameters: Parameters):
     if not data:
         conn.close()
         raise HTTPException(status_code=404,
-                            detail=f"{parameters.store_id} and \
-                            {parameters.product_id} \
+                            detail=f"{parameters.store_id} and {parameters.product_id} \
                             not found")
 
     update = []
