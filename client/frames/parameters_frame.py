@@ -270,7 +270,7 @@ def parameters_frame(host: str, port: int):
     imgui.pop_item_width()
     imgui.same_line()
 
-    button_clicked_add_parameters = imgui.button("Add a parameters")
+    button_clicked_add_parameters = imgui.button("Add parameters")
     if button_clicked_add_parameters:
         button_clicked_add_parameters = False
         response_add_parameters = requests.post(
