@@ -79,7 +79,6 @@ def purchases_frame(host: str, port: int):
                 storetypes_refresh[storetype] = False
                 get_storetype_response = requests.get(
                     f"http://{host}:{port}/storetypes/get-storetype/{storetype}")
-                #imgui.begin_popup_modal()
                 info = get_storetype_response.json()["Data"][0]
                 storetypes_info[storetype] = {"storetype_name": info[1][:50],
                                      "storetype_size": info[2][:10],

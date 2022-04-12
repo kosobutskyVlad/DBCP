@@ -10,6 +10,7 @@ parameters_info = {}
 parameters_refresh = {}
 parameters_changed = {}
 
+show_popup_specify_id_error = False
 show_popup_get_parameters_error = False
 
 input_get_by_store_id = ""
@@ -37,6 +38,7 @@ def parameters_frame(host: str, port: int):
     global parameters_changed
     global info_add_parameters
 
+    global show_popup_specify_id_error
     global show_popup_get_parameters_error
 
     global input_get_by_store_id
@@ -65,6 +67,8 @@ def parameters_frame(host: str, port: int):
             parameters_refresh = {parameters[0]: True for parameters in parameters_list}
             parameters_changed = {parameters[0]: False for parameters in parameters_list}
             show_selectable_parameters = False
+        else:
+            show_popup_specify_id_error = True
 
     if imgui.button("Show parameters list"):
         if response_get_parameters:
@@ -81,6 +85,16 @@ def parameters_frame(host: str, port: int):
         if imgui.button(label="Close"):
             imgui.close_current_popup()
             show_popup_get_parameters_error = False
+        imgui.end_popup()
+
+    if show_popup_specify_id_error:
+        imgui.open_popup("Specify id error")
+    if imgui.begin_popup_modal("Specify id error")[0]:
+        imgui.text("Specify at least one of: store_id, product_id.")
+
+        if imgui.button(label="Close"):
+            imgui.close_current_popup()
+            show_popup_specify_id_error = False
         imgui.end_popup()
 
     if show_selectable_parameters:
@@ -115,7 +129,7 @@ def parameters_frame(host: str, port: int):
                     "product_cost_coef": info[9]}
             
             imgui.begin_child("parameters_editor", 1200, 200, border=True)
-            imgui.text(f"id: {parameters}")
+            imgui.text(parameters_list[i][2] if input_get_by_store_id else parameters_list[i][1])
             imgui.same_line()
             imgui.push_item_width(50)
             changed, parameters_info[parameters]["store_id"] = \
