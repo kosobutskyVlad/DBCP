@@ -60,11 +60,7 @@ def cities_frame(host: str, port: int):
         try:
             response_get_cities = requests.get(
                 f"http://{host}:{port}/cities/get-cities")
-        except requests.exceptions.ConnectionError:
-            show_popup_server_down = True
-            
-        
-        if response_get_cities:
+
             if response_get_cities.status_code == 200:
                 cities_list = response_get_cities.json()["cities"]
 
@@ -75,6 +71,9 @@ def cities_frame(host: str, port: int):
                 cities_changed = {
                     city[0]: False for city in cities_list}
                 show_selectable_cities = False
+
+        except requests.exceptions.ConnectionError:
+            show_popup_server_down = True   
 
     if imgui.button("Show cities list"):
         if response_get_cities:
@@ -115,7 +114,7 @@ def cities_frame(host: str, port: int):
                     cities_refresh = {}
                     cities_changed = {}
             
-            if show_popup_server_down == True:
+            if show_popup_server_down:
                 break
             
             imgui.begin_child("cities_editor", 1200, 200, border=True)
