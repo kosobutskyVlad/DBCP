@@ -6,7 +6,6 @@ from ..error_popups import (
     popup_server_down,
     popup_load_list,
     popup_already_exists,
-    popup_deletion_rejected,
     popup_not_found,
     popup_argument_missing)
 
