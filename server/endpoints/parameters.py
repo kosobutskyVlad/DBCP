@@ -58,7 +58,7 @@ def get_parameters(store_id: Optional[str] = None, product_id: Optional[str] = N
         where_clause = " AND ".join(where_conditions)
     else:
         raise HTTPException(status_code=422,
-                        detail=f"Specify at least one of: store_id; product_id")
+                        detail=f"Specify at least one of: store_id or product_id.")
 
     cursor = conn.cursor()
     cursor.execute(f"SELECT * FROM LossFunctionParameters \
@@ -72,7 +72,7 @@ def get_parameters(store_id: Optional[str] = None, product_id: Optional[str] = N
         return {"parameters": data}
 
     raise HTTPException(status_code=404,
-                        detail=f"{store_id} and {product_id} not found")
+                        detail=f"{store_id} and {product_id} not found.")
 
 @router.post("/add-parameters")
 def add_parameters(parameters: Parameters):
@@ -120,9 +120,7 @@ def add_parameters(parameters: Parameters):
     if data:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"{parameters.store_id[:5]} and \
-                            {parameters.product_id[:5]} \
-                            parameters already exist")
+                            detail=f"{parameters.store_id[:5]} and {parameters.product_id[:5]} parameters already exist.")
 
     cursor.execute(f"INSERT INTO LossFunctionParameters( \
                    store_id, product_id, loyalty_charge_x, \
@@ -171,8 +169,7 @@ def update_parameters(parameters: Parameters):
     if not data:
         conn.close()
         raise HTTPException(status_code=404,
-                            detail=f"{parameters.store_id} and {parameters.product_id} \
-                            not found")
+                            detail=f"{parameters.store_id} and {parameters.product_id} not found.")
 
     update = []
     if parameters.loyalty_charge_x is not None:
@@ -199,7 +196,7 @@ def update_parameters(parameters: Parameters):
     if not update:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"Fill at least one field")
+                            detail=f"Fill at least one field.")
 
     cursor = conn.cursor()
     cursor.execute(f"UPDATE LossFunctionParameters \
@@ -239,8 +236,7 @@ def delete_parameters(store_id: str, product_id: str):
     if not data:
         conn.close()
         raise HTTPException(status_code=404,
-                            detail=f"{store_id} and {product_id} \
-                            not found")
+                            detail=f"{store_id} and {product_id} not found.")
 
     cursor.execute(f"DELETE FROM LossFunctionParameters \
                    WHERE store_id = '{store_id}' \

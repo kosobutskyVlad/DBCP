@@ -54,7 +54,7 @@ def get_store(store_id: str):
         return {"Data": data}
 
     raise HTTPException(status_code=404,
-                        detail=f"{store_id} not found")
+                        detail=f"{store_id} not found.")
 
 @router.post("/add-store")
 def add_store(store: Store):
@@ -75,8 +75,7 @@ def add_store(store: Store):
     if data:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"{store.store_id[:5]} \
-                            already exists")
+                            detail=f"{store.store_id[:5]} already exists.")
 
     cursor.execute(f"SELECT city_id FROM Cities \
                    WHERE city_id = '{store.city_id}'")
@@ -87,7 +86,7 @@ def add_store(store: Store):
     if not data:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"{store.city_id} does not exist")
+                            detail=f"{store.city_id} does not exist.")
 
     cursor.execute(f"SELECT storetype_id FROM StoreTypes \
                    WHERE storetype_id = '{store.storetype_id}'")
@@ -98,8 +97,7 @@ def add_store(store: Store):
     if not data:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"{store.storetype_id} \
-                            does not exist")
+                            detail=f"{store.storetype_id} does not exist.")
 
     cursor.execute(f"INSERT INTO Stores VALUES('{store.store_id[:5]}', \
                    '{store.storetype_id}', '{store.city_id}', \
@@ -130,7 +128,7 @@ def update_store(store: Store):
     if not data:
         conn.close()
         raise HTTPException(status_code=404,
-                            detail=f"{store.store_id} not found")
+                            detail=f"{store.store_id} not found.")
 
     update = []
     if store.storetype_id is not None:
@@ -165,7 +163,7 @@ def update_store(store: Store):
     if not update:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"Fill at least one field")
+                            detail=f"Fill at least one field.")
 
     cursor = conn.cursor()
     cursor.execute(f"UPDATE Stores SET {', '.join(update)} \
@@ -200,7 +198,7 @@ def delete_store(store_id: str):
     if not data:
         conn.close()
         raise HTTPException(status_code=404,
-                            detail=f"{store_id} not found")
+                            detail=f"{store_id} not found.")
 
     try:
         cursor.execute(f"DELETE FROM Stores \
@@ -208,8 +206,7 @@ def delete_store(store_id: str):
         conn.commit()
     except pyodbc.IntegrityError:
         raise HTTPException(status_code=409,
-                            detail=f"{store_id} is being \
-                            referenced by a foreign key")
+                            detail=f"{store_id} is being referenced by a foreign key.")
     finally:
         conn.close()
 

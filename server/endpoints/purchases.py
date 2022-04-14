@@ -38,7 +38,7 @@ def get_purchases_all():
     return {"purchases": data}
 
 @router.get("/get-purchases")
-def get_purchases(store_id: Optional[str] = None, product_id: Optional[str] = None):
+def get_purchases(store_id: str, product_id: str):
 
     conn = pyodbc.connect(
         "Driver={SQL Server Native Client 11.0};"
@@ -52,15 +52,10 @@ def get_purchases(store_id: Optional[str] = None, product_id: Optional[str] = No
         where_conditions.append(f"store_id = '{store_id}'")
     if product_id:
         where_conditions.append(f"product_id = '{product_id}'")
-    if where_conditions:
-        where_clause = " AND ".join(where_conditions)
-    else:
-        raise HTTPException(status_code=422,
-                        detail=f"Specify at least one of: store_id; product_id")
+    where_clause = " AND ".join(where_conditions)
 
     cursor = conn.cursor()
-    cursor.execute(f"SELECT * FROM LossFunctionParameters \
-                   WHERE {where_clause}")
+    cursor.execute(f"SELECT * FROM Purchases WHERE {where_clause}")
     data = []
     for row in cursor:
         data.append(list(row))
@@ -70,8 +65,7 @@ def get_purchases(store_id: Optional[str] = None, product_id: Optional[str] = No
         return {"purchases": data}
 
     raise HTTPException(status_code=404,
-                        detail=f"{store_id} and {product_id} \
-                        not found")
+                        detail=f"{store_id} and {product_id} not found.")
 
 @router.get("/get-purchase")
 def get_purchases(purchase_id: int):
@@ -83,7 +77,7 @@ def get_purchases(purchase_id: int):
         "Trusted_Connection=yes;")
 
     cursor = conn.cursor()
-    cursor.execute(f"SELECT * FROM LossFunctionParameters \
+    cursor.execute(f"SELECT * FROM Purchases \
                    WHERE purchase_id = {purchase_id}")
     data = []
     for row in cursor:
@@ -94,7 +88,7 @@ def get_purchases(purchase_id: int):
         return {"Data": data}
 
     raise HTTPException(status_code=404,
-                        detail=f"{purchase_id} not found")
+                        detail=f"{purchase_id} not found.")
 
 @router.post("/add-purchase")
 def add_purchase(purchase: Purchase):
@@ -128,8 +122,7 @@ def add_purchase(purchase: Purchase):
     if not data:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"{purchase.product_id} \
-                            does not exist")
+                            detail=f"{purchase.product_id} does not exist.")
 
     cursor.execute(f"INSERT INTO Purchases(store_id, product_id, \
                    purchase_date, price, sales, discount, \
@@ -170,8 +163,7 @@ def update_purchase(purchase_id: int, purchase: Purchase):
     if not data:
         conn.close()
         raise HTTPException(status_code=404,
-                            detail=f"{purchase_id} \
-                            not found")
+                            detail=f"{purchase_id} not found.")
     cursor.execute(f"SELECT store_id FROM Stores \
                    WHERE store_id = '{purchase.store_id}'")
     data = []
@@ -193,35 +185,27 @@ def update_purchase(purchase_id: int, purchase: Purchase):
     if not data:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"{purchase.product_id} \
-                            does not exist")
+                            detail=f"{purchase.product_id} does not exist.")
 
     update = []
     if purchase.store_id is not None:
-        update.append(f"store_id = \
-                      '{purchase.store_id}'")
+        update.append(f"store_id = '{purchase.store_id}'")
     if purchase.product_id is not None:
-        update.append(f"product_id = \
-                      '{purchase.product_id}'")
+        update.append(f"product_id = '{purchase.product_id}'")
     if purchase.purchase_date is not None:
-        update.append(f"purchase_date = \
-                      '{purchase.purchase_date}'")
+        update.append(f"purchase_date = '{purchase.purchase_date}'")
     if purchase.price is not None:
-        update.append(f"price = \
-                      {purchase.price}")
+        update.append(f"price = {purchase.price}")
     if purchase.sales is not None:
-        update.append(f"sales = \
-                      {purchase.sales}")
+        update.append(f"sales = {purchase.sales}")
     if purchase.discount is not None:
-        update.append(f"discount = \
-                      {purchase.discount}")
+        update.append(f"discount = {purchase.discount}")
     if purchase.revenue is not None:
-        update.append(f"revenue = \
-                      {purchase.revenue}")
+        update.append(f"revenue = {purchase.revenue}")
     if not update:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"Fill at least one field")
+                            detail=f"Fill at least one field.")
 
     cursor = conn.cursor()
     cursor.execute(f"UPDATE Purchases \
@@ -230,7 +214,7 @@ def update_purchase(purchase_id: int, purchase: Purchase):
                    AND product_id = '{purchase.product_id}'")
     conn.commit()
 
-    cursor.execute(f"SELECT * FROM LossFunctionParameters \
+    cursor.execute(f"SELECT * FROM Purchases \
                    WHERE store_id = '{purchase.store_id}' \
                    AND product_id = '{purchase.product_id}'")
     data = []
@@ -259,7 +243,7 @@ def delete_purchase(purchase_id: int):
     if not data:
         conn.close()
         raise HTTPException(status_code=404,
-                            detail=f"{purchase_id} not found")
+                            detail=f"{purchase_id} not found.")
 
     cursor.execute(f"DELETE FROM Purchases \
                    WHERE purchase_id = '{purchase_id}'")

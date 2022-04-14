@@ -52,7 +52,7 @@ def get_storetype(storetype_id: str):
         return {"Data": data}
 
     raise HTTPException(status_code=404,
-                        detail=f"{storetype_id} not found")
+                        detail=f"{storetype_id} not found.")
 
 @router.post("/add-storetype")
 def add_storetype(storetype: StoreType):
@@ -73,8 +73,7 @@ def add_storetype(storetype: StoreType):
     if data:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"{storetype.storetype_id[:4]} \
-                            already exists")
+                            detail=f"{storetype.storetype_id[:4]} already exists.")
 
     cursor.execute(f"INSERT INTO StoreTypes \
                    VALUES('{storetype.storetype_id[:4]}', \
@@ -104,8 +103,7 @@ def update_storetype(storetype: StoreType):
     if not data:
         conn.close()
         raise HTTPException(status_code=404,
-                            detail=f"{storetype.storetype_id} \
-                            not found")
+                            detail=f"{storetype.storetype_id} not found.")
 
     cursor = conn.cursor()
     cursor.execute(f"UPDATE StoreTypes SET \
@@ -142,7 +140,7 @@ def delete_storetype(storetype_id: str):
     if not data:
         conn.close()
         raise HTTPException(status_code=404,
-                            detail=f"{storetype_id} not found")
+                            detail=f"{storetype_id} not found.")
 
     try:
         cursor.execute(f"DELETE FROM StoreTypes \
@@ -150,8 +148,7 @@ def delete_storetype(storetype_id: str):
         conn.commit()
     except pyodbc.IntegrityError:
         raise HTTPException(status_code=409,
-                            detail=f"{storetype_id} is being \
-                            referenced by a foreign key")
+                            detail=f"{storetype_id} is being referenced by a foreign key.")
     finally:
         conn.close()
     return {"storetype_id": storetype_id, "is_deleted": True}

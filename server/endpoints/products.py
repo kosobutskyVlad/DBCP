@@ -57,7 +57,7 @@ def get_product(product_id: str):
         return {"Data": data}
 
     raise HTTPException(status_code=404,
-                        detail=f"{product_id} not found")
+                        detail=f"{product_id} not found.")
 
 @router.post("/add-product")
 def add_product(product: Product):
@@ -78,8 +78,7 @@ def add_product(product: Product):
     if data:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"{product.product_id[:5]} \
-                            already exists")
+                            detail=f"{product.product_id[:5]} already exists.")
 
     cursor.execute(f"INSERT INTO Products \
                    VALUES('{product.product_id[:5]}', \
@@ -118,7 +117,7 @@ def update_product(product: Product):
     if not data:
         conn.close()
         raise HTTPException(status_code=404,
-                            detail=f"{product.product_id} not found")
+                            detail=f"{product.product_id} not found.")
 
     update = []
     if product.product_name is not None:
@@ -137,7 +136,7 @@ def update_product(product: Product):
     if not update:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"Fill at least one field")
+                            detail=f"Fill at least one field.")
 
     cursor = conn.cursor()
     cursor.execute(f"UPDATE Products SET {', '.join(update)} \
@@ -172,7 +171,7 @@ def delete_product(product_id: str):
     if not data:
         conn.close()
         raise HTTPException(status_code=404,
-                            detail=f"{product_id} not found")
+                            detail=f"{product_id} not found.")
 
     try:
         cursor.execute(f"DELETE FROM Products \
@@ -180,8 +179,7 @@ def delete_product(product_id: str):
         conn.commit()
     except pyodbc.IntegrityError:
         raise HTTPException(status_code=409,
-                            detail=f"{product_id} is being \
-                            referenced by a foreign key")
+                            detail=f"{product_id} is being referenced by a foreign key.")
     finally:
         conn.close()
 

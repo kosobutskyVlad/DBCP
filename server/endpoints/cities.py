@@ -52,7 +52,7 @@ def get_city(city_id: str):
     if data:
         return {"Data": data}
 
-    raise HTTPException(status_code=404, detail=f"{city_id} not found")
+    raise HTTPException(status_code=404, detail=f"{city_id} not found.")
 
 @router.post("/add-city")
 def add_city(city: City):
@@ -73,7 +73,7 @@ def add_city(city: City):
     if data:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"{city.city_id[:4]} already exists")
+                            detail=f"{city.city_id[:4]} already exists.")
 
     cursor.execute(f"INSERT INTO Cities VALUES('{city.city_id[:4]}', \
                    '{city.city_name[:50]}', '{city.city_size[:10]}', \
@@ -104,7 +104,7 @@ def update_city(city: City):
     if not data:
         conn.close()
         raise HTTPException(status_code=404,
-                            detail=f"{city.city_id} not found")
+                            detail=f"{city.city_id} not found.")
 
     update = []
     if city.city_name is not None:
@@ -116,7 +116,7 @@ def update_city(city: City):
     if not update:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"Fill at least one field")
+                            detail=f"Fill at least one field.")
 
     cursor = conn.cursor()
     cursor.execute(f"UPDATE Cities SET {', '.join(update)} \
@@ -151,14 +151,13 @@ def delete_city(city_id: str):
     if not data:
         conn.close()
         raise HTTPException(status_code=404,
-                            detail=f"{city_id} not found")
+                            detail=f"{city_id} not found.")
     try:
         cursor.execute(f"DELETE FROM Cities WHERE city_id = '{city_id}'")
         conn.commit()
     except pyodbc.IntegrityError:
         raise HTTPException(status_code=409,
-                            detail=f"{city_id} is being referenced \
-                            by a foreign key")
+                            detail=f"{city_id} is being referenced by a foreign key.")
     finally:
         conn.close()
 
