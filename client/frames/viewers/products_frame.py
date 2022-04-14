@@ -64,7 +64,7 @@ def products_frame(host: str, port: int):
                 show_selectable_products = True
         else:
             show_error_popup = True
-            error_popup_message = "Server unavailable.\nPlease retry later."
+            error_popup_message = "Load the products list first."
 
     if show_selectable_products:
         imgui.begin_child("products_list", 1200, 200, border=True)
