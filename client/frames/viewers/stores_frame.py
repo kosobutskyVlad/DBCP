@@ -32,12 +32,8 @@ def stores_frame(host: str, port: int):
     global stores_changed
     global info_add_store
 
-    global show_popup_server_down
-    global show_popup_load_list
-    global show_popup_already_exists
-    global show_popup_deletion_rejected
-    global show_popup_not_found
-    global item_id
+    global show_error_popup
+    global error_popup_message
 
     imgui.begin("Stores")
 

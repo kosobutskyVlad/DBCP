@@ -103,11 +103,10 @@ def purchases_frame(host: str, port: int):
             if purchases_refresh[purchase]:
                 purchases_refresh[purchase] = False
                 try:
-                    get_purchases_response = requests.get(
-                        f"http://{host}:{port}/purchases/get-purchases/",
-                        params={"store_id": input_get_by_store_id or purchases_list[i][1],
-                        "product_id": input_get_by_product_id or purchases_list[i][2]})
-                    info = get_purchases_response.json()["purchases"][0]
+                    get_purchase_response = requests.get(
+                        f"http://{host}:{port}/purchases/get-purchase/",
+                        params={"purchase_id": purchases_list[i][0]})
+                    info = get_purchase_response.json()["Data"][0]
                     purchases_info[purchase] = {
                         "store_id": info[1][:5],
                         "product_id": info[2][:5],
@@ -183,7 +182,7 @@ def purchases_frame(host: str, port: int):
         for i, purchase in enumerate(purchases_changed):
             if purchases_changed[purchase]:
                 try:
-                    response_update_purchases = requests.put(
+                    response_update_purchase = requests.put(
                         f"http://{host}:{port}/purchases/update-purchase/{purchases_list[i][0]}",
                         json={"store_id": purchases_info[purchase]["store_id"],
                         "product_id": purchases_info[purchase]["product_id"],
@@ -194,9 +193,9 @@ def purchases_frame(host: str, port: int):
                         "bank_rate_coef": purchases_info[purchase]["bank_rate_coef"],
                         "product_cost_x": purchases_info[purchase]["product_cost_x"],
                         "product_cost_coef": purchases_info[purchase]["product_cost_coef"]})
-                    if response_update_purchases.status_code == 422:
+                    if response_update_purchase.status_code == 422:
                         show_error_popup = True
-                        error_popup_message = response_update_purchases.json()["detail"]
+                        error_popup_message = response_update_purchase.json()["detail"]
                 except requests.exceptions.ConnectionError:
                     show_error_popup = True
                     error_popup_message = "Server unavailable.\nPlease retry later."
@@ -207,7 +206,7 @@ def purchases_frame(host: str, port: int):
         for i, purchases in enumerate(selectable_purchases):
             if selectable_purchases[purchases]:
                 try:
-                    response_delete_purchases = requests.delete(
+                    response_delete_purchase = requests.delete(
                         f"http://{host}:{port}/purchases/delete-purchase/{purchases_list[i][0]}")
                 except requests.exceptions.ConnectionError:
                     show_error_popup = True
@@ -247,11 +246,11 @@ def purchases_frame(host: str, port: int):
     if button_clicked_add_purchases:
         button_clicked_add_purchases = False
         try:
-            response_add_purchases = requests.post(
+            response_add_purchase = requests.post(
                 f"http://{host}:{port}/purchases/add-purchase", json=info_add_purchase)
-            if response_add_purchases.status_code == 422:
+            if response_add_purchase.status_code == 422:
                 show_error_popup = True
-                error_popup_message = response_add_purchases.json()["detail"]
+                error_popup_message = response_add_purchase.json()["detail"]
         except requests.exceptions.ConnectionError:
             show_error_popup = True
             error_popup_message = "Server unavailable.\nPlease retry later."

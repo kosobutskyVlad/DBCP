@@ -2,11 +2,7 @@ import requests
 
 import imgui
 
-from ..error_popups import (
-    popup_server_down,
-    popup_load_list,
-    popup_already_exists,
-    popup_deletion_rejected)
+from ..error_popup import error_popup
 
 response_get_storetypes = None
 storetypes_list = []
@@ -16,11 +12,8 @@ storetypes_info = {}
 storetypes_refresh = {}
 storetypes_changed = {}
 
-show_popup_server_down = False
-show_popup_load_list = False
-show_popup_already_exists = False
-show_popup_deletion_rejected = False
-item_id = ""
+show_error_popup = False
+error_popup_message = ""
 
 info_add_storetype = {
     "storetype_id": "",
@@ -37,11 +30,8 @@ def storetypes_frame(host: str, port: int):
     global storetypes_changed
     global info_add_storetype
 
-    global show_popup_server_down
-    global show_popup_load_list
-    global show_popup_already_exists
-    global show_popup_deletion_rejected
-    global item_id
+    global show_error_popup
+    global error_popup_message
 
     imgui.begin("Storetypes")
 
