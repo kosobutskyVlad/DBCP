@@ -211,7 +211,7 @@ def parameters_frame(host: str, port: int):
                         "product_cost_x": parameters_info[parameters]["product_cost_x"],
                         "product_cost_coef": parameters_info[parameters]["product_cost_coef"]})
                     if response_update_parameters.status_code == 422:
-                        show_erorr_popup = True
+                        show_error_popup = True
                         error_popup_message = response_update_parameters.json()["detail"]
                 except requests.exceptions.ConnectionError:
                     show_error_popup = True
