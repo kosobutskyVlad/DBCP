@@ -131,20 +131,6 @@ def add_purchase(purchase: Purchase):
                             detail=f"{purchase.product_id} \
                             does not exist")
 
-    cursor.execute(f"SELECT store_id, product_id FROM Purchases \
-                   WHERE store_id = '{purchase.store_id}' \
-                   AND product_id = '{purchase.product_id}'")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-    
-    if data:
-        conn.close()
-        raise HTTPException(status_code=422,
-                            detail=f"{purchase.store_id} \
-                            and {purchase.product_id} \
-                            already exists")
-
     cursor.execute(f"INSERT INTO Purchases(store_id, product_id, \
                    purchase_date, price, sales, discount, \
                    revenue) VALUES('{purchase.store_id}', \
