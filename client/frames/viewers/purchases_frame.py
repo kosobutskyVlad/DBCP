@@ -2,174 +2,266 @@ import requests
 
 import imgui
 
-response_get_storetypes = None
-storetypes_list = []
-show_selectable_storetypes = False
-selectable_storetypes = {}
-storetypes_info = {}
-storetypes_refresh = {}
-storetypes_changed = {}
+from ..error_popups import (
+    popup_server_down,
+    popup_load_list,
+    popup_not_found,
+    popup_argument_missing)
 
-show_popup_get_storetypes_error = False
-show_popup_delete_error = False
+response_get_purchases = None
+purchases_list = []
+show_selectable_purchases = False
+selectable_purchases = {}
+purchases_info = {}
+purchases_refresh = {}
+purchases_changed = {}
 
-info_add_storetype = {
-    "storetype_id": "",
-    "storetype_name": "",
-    "storetype_size": "",
-    "country": ""
+show_popup_server_down = False
+show_popup_argument_missing = False
+show_popup_load_list = False
+show_popup_already_exists = False
+show_popup_not_found = False
+item_id = ""
+
+input_get_by_store_id = ""
+input_get_by_product_id = ""
+
+info_add_purchase = {
+    "store_id": "",
+    "product_id": "",
+    "purchase_date": "",
+    "price": 0.0,
+    "sales": 0,
+    "discount": 0.0,
+    "revenue": 0.0
 }
 
 def purchases_frame(host: str, port: int):
-    global response_get_storetypes
-    global storetypes_list
-    global show_selectable_storetypes
-    global selectable_storetypes
-    global storetypes_info
-    global storetypes_refresh
-    global storetypes_changed
-    global info_add_storetype
+    global response_get_purchases
+    global purchases_list
+    global show_selectable_purchases
+    global selectable_purchases
+    global purchases_info
+    global purchases_refresh
+    global purchases_changed
+    global info_add_purchase
 
-    global show_popup_get_storetypes_error
-    global show_popup_delete_error
+    global show_popup_server_down
+    global show_popup_argument_missing
+    global show_popup_load_list
+    global show_popup_already_exists
+    global show_popup_not_found
+    global item_id
 
-    imgui.begin("Cities")
+    global input_get_by_store_id
+    global input_get_by_product_id
 
-    if imgui.button("Load storetypes list"):
-        response_get_storetypes = requests.get(
-            f"http://{host}:{port}/storetypes/get-storetypes")
-        
-        if response_get_storetypes.status_code == 200:
-            storetypes_list = response_get_storetypes.json()["storetypes"]
+    imgui.begin("Purchases")
 
-            selectable_storetypes = {storetype[0]: False for storetype in storetypes_list}
-            storetypes_refresh = {storetype[0]: True for storetype in storetypes_list}
-            storetypes_changed = {storetype[0]: False for storetype in storetypes_list}
-            show_selectable_storetypes = False
+    show_popup_server_down = popup_server_down(show_popup_server_down)
+    show_popup_argument_missing = popup_argument_missing(
+        show_popup_argument_missing)
+    show_popup_load_list = popup_load_list(
+        show_popup_load_list, "purchases")
+    show_popup_not_found = popup_not_found(
+        show_popup_not_found, item_id)
 
-    if imgui.button("Show storetypes list"):
-        if response_get_storetypes:
-            if response_get_storetypes.status_code == 200:
-                show_selectable_storetypes = True
+    imgui.push_item_width(100)
+    _, input_get_by_store_id = imgui.input_text("Get by store_id",
+                input_get_by_store_id, 6)
+
+    _, input_get_by_product_id = imgui.input_text("Get by product_id",
+                input_get_by_product_id, 6)
+    imgui.pop_item_width()
+
+    if imgui.button("Load purchases list"):
+        try:
+            response_get_purchases = requests.get(
+                f"http://{host}:{port}/purchases/get-purchases")
+            
+            if response_get_purchases.status_code == 200:
+                purchases_list = response_get_purchases.json()["purchases"]
+
+                selectable_purchases = {purchase[0]: False for purchase in purchases_list}
+                purchases_refresh = {purchase[0]: True for purchase in purchases_list}
+                purchases_changed = {purchase[0]: False for purchase in purchases_list}
+                show_selectable_purchases = False
+            else:
+                show_popup_argument_missing = True
+        except requests.exceptions.ConnectionError:
+            show_popup_server_down = True 
+
+    if imgui.button("Show purchases list"):
+        if response_get_purchases:
+            if response_get_purchases.status_code == 200:
+                show_selectable_purchases = True
         else:
-            show_popup_get_storetypes_error = True
-    
-    if show_popup_get_storetypes_error:
-        imgui.open_popup("Error")
-    if imgui.begin_popup_modal("Error")[0]:
-        imgui.text("Load the storetypes list.")
+            show_popup_load_list = True
 
-        if imgui.button(label="Close"):
-            imgui.close_current_popup()
-            show_popup_get_storetypes_error = False
-        imgui.end_popup()
-
-    if show_selectable_storetypes:
+    if show_selectable_purchases:
+        imgui.begin_child("purchases_list", 1200, 200, border=True)
         imgui.columns(count=15, identifier=None, border=False)
-        for storetype in storetypes_list:
-            label = storetype[0]
-            _, selectable_storetypes[storetype[0]] = imgui.selectable(
-                label=label, selected=selectable_storetypes[storetype[0]])
+        for purchase in purchases_list:
+            label = purchase[0]
+            _, selectable_purchases[purchase[0]] = imgui.selectable(
+                label=label, selected=selectable_purchases[purchase[0]])
             imgui.next_column()
         imgui.columns(1)
+        imgui.end_child()
 
-    for storetype in selectable_storetypes:
-        if selectable_storetypes[storetype]:
-            if storetypes_refresh[storetype]:
-                storetypes_refresh[storetype] = False
-                get_storetype_response = requests.get(
-                    f"http://{host}:{port}/storetypes/get-storetype/{storetype}")
-                info = get_storetype_response.json()["Data"][0]
-                storetypes_info[storetype] = {"storetype_name": info[1][:50],
-                                     "storetype_size": info[2][:10],
-                                     "country": info[3][:50]}
+    for i, purchase in enumerate(selectable_purchases):
+        if selectable_purchases[purchases]:
+            if purchases_refresh[purchases]:
+                purchases_refresh[purchases] = False
+                try:
+                    get_purchases_response = requests.get(
+                        f"http://{host}:{port}/purchases/get-purchases/",
+                        params={"store_id": input_get_by_store_id or purchases_list[i][1],
+                        "product_id": input_get_by_product_id or purchases_list[i][2]})
+                    info = get_purchases_response.json()["purchases"][0]
+                    purchases_info[purchases] = {
+                        "store_id": info[1][:5],
+                        "product_id": info[2][:5],
+                        "purchase_date": info[3],
+                        "price": info[4],
+                        "sales": info[5],
+                        "discount": info[6],
+                        "revenue": info[7]}
+                except requests.exceptions.ConnectionError:
+                    show_popup_server_down = True
+                    purchases_list = []
+                    show_selectable_purchases = False
+                    selectable_purchases = {}
+                    purchases_info = {}
+                    purchases_refresh = {}
+                    purchases_changed = {}
+
+            if show_popup_server_down:
+                break
             
-            imgui.begin_child("storetypes_editor", 1200, 200, border=True)
-            imgui.text(storetype)
-            imgui.same_line()
-            imgui.push_item_width(300)
-            changed, storetypes_info[storetype]["storetype_name"] = \
-                imgui.input_text(f"{storetype}: storetype_name",
-                storetypes_info[storetype]["storetype_name"], 51)
-            if changed:
-                storetypes_changed[storetype] = True
-            imgui.pop_item_width()
+            imgui.begin_child("purchases_editor", 1200, 200, border=True)
+            imgui.text(purchases_list[i][2] if input_get_by_store_id else purchases_list[i][1])
             imgui.same_line()
             imgui.push_item_width(100)
-            changed, storetypes_info[storetype]["storetype_size"] = \
-                imgui.input_text(f"{storetype}: storetype_size",
-                storetypes_info[storetype]["storetype_size"], 11)
+            changed, purchases_info[purchases]["store_id"] = \
+                imgui.input_text(f"{purchases}: store_id",
+                purchases_info[purchases]["store_id"], 6)
             if changed:
-                storetypes_changed[storetype] = True
-            imgui.pop_item_width()
+                purchases_changed[purchases] = True
             imgui.same_line()
-            imgui.push_item_width(300)
-            changed, storetypes_info[storetype]["country"] = \
-                imgui.input_text(f"{storetype}: country",
-                storetypes_info[storetype]["country"], 51)
+            changed, purchases_info[purchases]["product_id"] = \
+                imgui.input_text(f"{purchases}: product_id",
+                purchases_info[purchases]["product_id"], 6)
             if changed:
-                storetypes_changed[storetype] = True
+                purchases_changed[purchases] = True
+            imgui.same_line()
+            changed, purchases_info[purchases]["purchase_date"] = \
+                imgui.input_text(f"{purchases}: purchase_date",
+                purchases_info[purchases]["purchase_date"], 11)
+            if changed:
+                purchases_changed[purchases] = True
+            imgui.same_line()
+            changed, purchases_info[purchases]["price"] = \
+                imgui.input_float(f"{purchases}: price",
+                purchases_info[purchases]["price"], 0.01, 1)
+            if changed:
+                purchases_changed[purchases] = True
+            imgui.same_line()
+            changed, purchases_info[purchases]["sales"] = \
+                imgui.input_int(f"{purchases}: sales",
+                purchases_info[purchases]["sales"], 1, 10)
+            if changed:
+                purchases_changed[purchases] = True
+
+            changed, purchases_info[purchases]["discount"] = \
+                imgui.input_float(f"{purchases}: discount",
+                purchases_info[purchases]["discount"], 0.01, 0.1)
+            if changed:
+                purchases_changed[purchases] = True
+            imgui.same_line()
+            changed, purchases_info[purchases]["revenue"] = \
+                imgui.input_float(f"{purchases}: revenue",
+                purchases_info[purchases]["revenue"], 0.01, 1)
+            if changed:
+                purchases_changed[purchases] = True
             imgui.pop_item_width()
             imgui.end_child()
 
-    button_clicked_update_storetypes = imgui.button("Update storetypes")
-    if button_clicked_update_storetypes:
-        button_clicked_update_storetypes = False
-        for storetype in storetypes_changed:
-            if storetypes_changed[storetype]:
-                response_update_storetype = requests.put(
-                    f"http://{host}:{port}/storetypes/update-storetype",
-                    json={"storetype_id": storetype,
-                    "storetype_name": storetypes_info[storetype]["storetype_name"],
-                    "storetype_size": storetypes_info[storetype]["storetype_size"],
-                    "country": storetypes_info[storetype]["country"]})
+    button_clicked_update_purchases = imgui.button("Update purchases")
+    if button_clicked_update_purchases:
+        button_clicked_update_purchases = False
+        for i, purchases in enumerate(purchases_changed):
+            if purchases_changed[purchases]:
+                try:
+                    response_update_purchases = requests.put(
+                        f"http://{host}:{port}/purchases/update-purchase/{purchases_list[i][0]}",
+                        json={"store_id": purchases_info[purchases]["store_id"],
+                        "product_id": purchases_info[purchases]["product_id"],
+                        "loyalty_charge_x": purchases_info[purchases]["loyalty_charge_x"],
+                        "loyalty_charge_coef": purchases_info[purchases]["loyalty_charge_coef"],
+                        "storage_cost_coef": purchases_info[purchases]["storage_cost_coef"],
+                        "bank_rate_x": purchases_info[purchases]["bank_rate_x"],
+                        "bank_rate_coef": purchases_info[purchases]["bank_rate_coef"],
+                        "product_cost_x": purchases_info[purchases]["product_cost_x"],
+                        "product_cost_coef": purchases_info[purchases]["product_cost_coef"]})
+                    if response_update_purchases.status_code == 422:
+                        show_popup_not_found = True
+                        item_id = response_update_purchases.json()["detail"].split(" ")[0]
+                except requests.exceptions.ConnectionError:
+                    show_popup_server_down = True
 
-    button_clicked_delete_storetypes = imgui.button("Delete storetypes")
-    if button_clicked_delete_storetypes:
-        button_clicked_delete_storetypes = False
-        for storetype in selectable_storetypes:
-            if selectable_storetypes[storetype]:
-                response_delete_storetype = requests.delete(
-                    f"http://{host}:{port}/storetypes/delete-storetype/{storetype}")
-                if response_delete_storetype.status_code == 409:
-                    show_popup_delete_error = True
-    
-    if show_popup_delete_error:
-        imgui.open_popup("Integrity Error")
-    if imgui.begin_popup_modal("Integrity Error")[0]:
-        imgui.text(f"Record {storetype} could not be deleted because \
-                   it is being referenced by a foreign key.")
+    button_clicked_delete_purchases = imgui.button("Delete purchases")
+    if button_clicked_delete_purchases:
+        button_clicked_delete_purchases = False
+        for i, purchases in enumerate(selectable_purchases):
+            if selectable_purchases[purchases]:
+                try:
+                    response_delete_purchases = requests.delete(
+                        f"http://{host}:{port}/purchases/delete-purchase/{purchases_list[i][0]}")
+                except requests.exceptions.ConnectionError:
+                    show_popup_server_down = True
 
-        if imgui.button(label="Close"):
-            imgui.close_current_popup()
-            show_popup_delete_error = False
-        imgui.end_popup()
-
-    imgui.push_item_width(50)
-    _, info_add_storetype["storetype_id"] = imgui.input_text(
-        "Add storetype_id", info_add_storetype["storetype_id"], 5)
-    imgui.pop_item_width()
-    imgui.same_line()
-    imgui.push_item_width(300)
-    _, info_add_storetype["storetype_name"] = imgui.input_text(
-        f"Add storetype_name", info_add_storetype["storetype_name"], 51)
-    imgui.pop_item_width()
-    imgui.same_line()
     imgui.push_item_width(100)
-    _, info_add_storetype["storetype_size"] = imgui.input_text(
-        f"Add storetype_size", info_add_storetype["storetype_size"], 11)
-    imgui.pop_item_width()
+    _, info_add_purchase["store_id"] = \
+        imgui.input_text("store_id",
+        info_add_purchase["store_id"], 6)
     imgui.same_line()
-    imgui.push_item_width(300)
-    _, info_add_storetype["country"] = imgui.input_text(
-        f"Add country", info_add_storetype["country"], 51)
-    imgui.pop_item_width()
+    _, info_add_purchase["product_id"] = \
+        imgui.input_text("product_id",
+        info_add_purchase["product_id"], 6)
+    imgui.same_line()
+    _, info_add_purchase["purchase_date"] = \
+        imgui.input_text("purchase_date",
+        info_add_purchase["purchase_date"], 11)
+    imgui.same_line()
+    _, info_add_purchase["price"] = \
+        imgui.input_float("price",
+        info_add_purchase["price"], 0.01, 1)
+    imgui.same_line()
+    _, info_add_purchase["sales"] = \
+        imgui.input_int("sales",
+        info_add_purchase["sales"], 1, 10)
+
+    _, info_add_purchase["discount"] = \
+        imgui.input_float("discount",
+        info_add_purchase["discount"], 0.01, 0.1)
+    imgui.same_line()
+    _, info_add_purchase["revenue"] = \
+        imgui.input_float("revenue",
+        info_add_purchase["revenue"], 0.01, 1)
     imgui.same_line()
 
-    button_clicked_add_storetype = imgui.button("Add a storetype")
-    if button_clicked_add_storetype:
-        button_clicked_add_storetype = False
-        response_add_storetype = requests.post(
-            f"http://{host}:{port}/storetypes/add-storetype", json=info_add_storetype)
+    button_clicked_add_purchases = imgui.button("Add purchases")
+    if button_clicked_add_purchases:
+        button_clicked_add_purchases = False
+        try:
+            response_add_purchases = requests.post(
+                f"http://{host}:{port}/purchases/add-purchase", json=info_add_purchase)
+            if response_add_purchases.status_code == 422:
+                if "already exists" in response_add_purchases.json()["detail"]:
+                    show_popup_not_found = True
+                    item_id = response_add_purchases.json()["detail"].split(" ")[0]
+        except requests.exceptions.ConnectionError:
+            show_popup_server_down = True
 
     imgui.end()
