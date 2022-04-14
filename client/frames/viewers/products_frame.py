@@ -2,11 +2,7 @@ import requests
 
 import imgui
 
-from ..error_popups import (
-    popup_server_down,
-    popup_load_list,
-    popup_already_exists,
-    popup_deletion_rejected)
+from ..error_popup import error_popup
 
 response_get_products = None
 products_list = []
@@ -16,11 +12,8 @@ products_info = {}
 products_refresh = {}
 products_changed = {}
 
-show_popup_server_down = False
-show_popup_load_list = False
-show_popup_already_exists = False
-show_popup_deletion_rejected = False
-item_id = ""
+show_error_popup = False
+error_popup_message = ""
 
 info_add_product = {
     "product_id": "",
@@ -42,21 +35,12 @@ def products_frame(host: str, port: int):
     global products_changed
     global info_add_product
 
-    global show_popup_server_down
-    global show_popup_load_list
-    global show_popup_already_exists
-    global show_popup_deletion_rejected
-    global item_id
+    global show_error_popup
+    global error_popup_message
 
     imgui.begin("Products")
 
-    show_popup_server_down = popup_server_down(show_popup_server_down)
-    show_popup_load_list = popup_load_list(
-        show_popup_load_list, "products")
-    show_popup_already_exists = popup_already_exists(
-        show_popup_already_exists, item_id)
-    show_popup_deletion_rejected = popup_deletion_rejected(
-        show_popup_deletion_rejected, item_id)
+    show_error_popup = error_popup(show_error_popup, error_popup_message)
 
     if imgui.button("Load products list"):
         try:
@@ -71,14 +55,16 @@ def products_frame(host: str, port: int):
                 products_changed = {product[0]: False for product in products_list}
                 show_selectable_products = False
         except requests.exceptions.ConnectionError:
-            show_popup_server_down = True
+            show_error_popup = True
+            error_popup_message = "Server unavailable.\nPlease retry later."
 
     if imgui.button("Show products list"):
         if response_get_products:
             if response_get_products.status_code == 200:
                 show_selectable_products = True
         else:
-            show_popup_load_list = True
+            show_error_popup = True
+            error_popup_message = "Server unavailable.\nPlease retry later."
 
     if show_selectable_products:
         imgui.begin_child("products_list", 1200, 200, border=True)
@@ -107,7 +93,8 @@ def products_frame(host: str, port: int):
                         "product_depth": info[5],
                         "product_width": info[6]}
                 except requests.exceptions.ConnectionError:
-                    show_popup_server_down = True
+                    show_error_popup = True
+                    error_popup_message = "Server unavailable.\nPlease retry later."
                     products_list = []
                     show_selectable_products = False
                     selectable_products = {}
@@ -115,7 +102,7 @@ def products_frame(host: str, port: int):
                     products_refresh = {}
                     products_changed = {}
             
-            if show_popup_server_down:
+            if error_popup_message:
                 break
 
             imgui.begin_child("products_editor", 1200, 200, border=True)
@@ -178,7 +165,8 @@ def products_frame(host: str, port: int):
                         "product_depth": products_info[product]["product_depth"],
                         "product_width": products_info[product]["product_width"]})
                 except requests.exceptions.ConnectionError:
-                    show_popup_server_down = True
+                    show_error_popup = True
+                    error_popup_message = "Server unavailable.\nPlease retry later."
 
     button_clicked_delete_products = imgui.button("Delete products")
     if button_clicked_delete_products:
@@ -189,9 +177,11 @@ def products_frame(host: str, port: int):
                     response_delete_product = requests.delete(
                         f"http://{host}:{port}/products/delete-product/{product}")
                     if response_delete_product.status_code == 409:
-                        show_popup_deletion_rejected = True
+                        show_error_popup = True
+                        error_popup_message = response_delete_product.json()["detail"]
                 except requests.exceptions.ConnectionError:
-                    show_popup_server_down = True
+                    show_error_popup = True
+                    error_popup_message = "Server unavailable.\nPlease retry later."
 
     imgui.push_item_width(50)
     _, info_add_product["product_id"] = imgui.input_text(
@@ -229,9 +219,10 @@ def products_frame(host: str, port: int):
                 f"http://{host}:{port}/products/add-product", json=info_add_product)
 
             if response_add_product.status_code == 422:
-                show_popup_already_exists = True
-                item_id = info_add_product["product_id"]
+                show_error_popup = True
+                error_popup_message = response_add_product.json()["detail"]
         except requests.exceptions.ConnectionError:
-            show_popup_server_down = True
+            show_error_popup = True
+            error_popup_message = "Server unavailable.\nPlease retry later."
 
     imgui.end()
