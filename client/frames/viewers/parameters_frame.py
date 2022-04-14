@@ -2,12 +2,8 @@ import requests
 
 import imgui
 
-from ..error_popups import (
-    popup_server_down,
-    popup_load_list,
-    popup_already_exists,
-    popup_not_found,
-    popup_argument_missing)
+from ..error_popup import (
+    error_popup)
 
 response_get_parameters = None
 parameters_list = []
@@ -17,12 +13,8 @@ parameters_info = {}
 parameters_refresh = {}
 parameters_changed = {}
 
-show_popup_server_down = False
-show_popup_argument_missing = False
-show_popup_load_list = False
-show_popup_already_exists = False
-show_popup_not_found = False
-item_id = ""
+show_error_popup = False
+error_popup_message = ""
 
 input_get_by_store_id = ""
 input_get_by_product_id = ""
@@ -49,27 +41,15 @@ def parameters_frame(host: str, port: int):
     global parameters_changed
     global info_add_parameters
 
-    global show_popup_server_down
-    global show_popup_argument_missing
-    global show_popup_load_list
-    global show_popup_already_exists
-    global show_popup_not_found
-    global item_id
+    global show_error_popup
+    global error_popup_message
 
     global input_get_by_store_id
     global input_get_by_product_id
 
     imgui.begin("Loss function parameters")
 
-    show_popup_server_down = popup_server_down(show_popup_server_down)
-    show_popup_argument_missing = popup_argument_missing(
-        show_popup_argument_missing)
-    show_popup_load_list = popup_load_list(
-        show_popup_load_list, "stores")
-    show_popup_already_exists = popup_already_exists(
-        show_popup_already_exists, item_id)
-    show_popup_not_found = popup_not_found(
-        show_popup_not_found, item_id)
+    show_error_popup = error_popup(show_error_popup, error_popup_message)
 
     imgui.push_item_width(100)
     _, input_get_by_store_id = imgui.input_text("Get by store_id",
@@ -94,16 +74,20 @@ def parameters_frame(host: str, port: int):
                 parameters_changed = {parameters[0]: False for parameters in parameters_list}
                 show_selectable_parameters = False
             else:
-                show_popup_argument_missing = True
+                show_error_popup = True
+                error_popup_message = response_get_parameters.json()["detail"]
         except requests.exceptions.ConnectionError:
-            show_popup_server_down = True 
+            show_error_popup = True
+            error_popup_message = "Server unavailable.\nPlease retry later."
 
     if imgui.button("Show parameters list"):
         if response_get_parameters:
             if response_get_parameters.status_code == 200:
                 show_selectable_parameters = True
         else:
-            show_popup_load_list = True
+            show_error_popup = True
+            error_popup_message = "Load the parameters list first."
+
 
     if show_selectable_parameters:
         imgui.begin_child("parameters_list", 1200, 200, border=True)
@@ -137,7 +121,8 @@ def parameters_frame(host: str, port: int):
                         "product_cost_x": info[8],
                         "product_cost_coef": info[9]}
                 except requests.exceptions.ConnectionError:
-                    show_popup_server_down = True
+                    show_error_popup = True
+                    error_popup_message = "Server unavailable.\nPlease retry later."
                     parameters_list = []
                     show_selectable_parameters = False
                     selectable_parameters = {}
@@ -145,7 +130,7 @@ def parameters_frame(host: str, port: int):
                     parameters_refresh = {}
                     parameters_changed = {}
 
-            if show_popup_server_down:
+            if show_error_popup:
                 break
             
             imgui.begin_child("parameters_editor", 1200, 200, border=True)
@@ -226,10 +211,11 @@ def parameters_frame(host: str, port: int):
                         "product_cost_x": parameters_info[parameters]["product_cost_x"],
                         "product_cost_coef": parameters_info[parameters]["product_cost_coef"]})
                     if response_update_parameters.status_code == 422:
-                        show_popup_not_found = True
-                        item_id = " ".join(response_update_parameters.json()["detail"].split(" ")[:3])
+                        show_erorr_popup = True
+                        error_popup_message = response_update_parameters.json()["detail"]
                 except requests.exceptions.ConnectionError:
-                    show_popup_server_down = True
+                    show_error_popup = True
+                    error_popup_message = "Server unavailable.\nPlease retry later."
 
     button_clicked_delete_parameters = imgui.button("Delete parameters")
     if button_clicked_delete_parameters:
@@ -242,7 +228,8 @@ def parameters_frame(host: str, port: int):
                         params={"store_id": input_get_by_store_id,
                         "product_id": input_get_by_product_id})
                 except requests.exceptions.ConnectionError:
-                    show_popup_server_down = True
+                    show_error_popup = True
+                    error_popup_message = "Server unavailable.\nPlease retry later."
 
     imgui.push_item_width(100)
     _, info_add_parameters["store_id"] = \
@@ -289,13 +276,10 @@ def parameters_frame(host: str, port: int):
             response_add_parameters = requests.post(
                 f"http://{host}:{port}/parameters/add-parameters", json=info_add_parameters)
             if response_add_parameters.status_code == 422:
-                if "already exists" in response_add_parameters.json()["detail"]:
-                    show_popup_already_exists = True
-                    item_id = f"{info_add_parameters['store_id']} and {info_add_parameters['product_id']}"
-                else:
-                    show_popup_not_found = True
-                    item_id = response_add_parameters.json()["detail"].split(" ")[0]
+                show_error_popup = True
+                error_popup_message = response_add_parameters.json()["detail"]
         except requests.exceptions.ConnectionError:
-            show_popup_server_down = True
+            show_error_popup = True
+            error_popup_message = "Server unavailable.\nPlease retry later."
 
     imgui.end()
