@@ -2,11 +2,8 @@ import requests
 
 import imgui
 
-from ..error_popups import (
-    popup_server_down,
-    popup_load_list,
-    popup_already_exists,
-    popup_deletion_rejected)
+from ..error_popup import (
+    error_popup)
 
 response_get_cities = None
 cities_list = []
@@ -16,12 +13,8 @@ cities_info = {}
 cities_refresh = {}
 cities_changed = {}
 
-show_popup_server_down = False
-show_popup_load_list = False
-show_popup_already_exists = False
-show_popup_deletion_rejected = False
-item_id = ""
-
+show_error_popup = False
+error_popup_message = ""
 
 info_add_city = {
     "city_id": "",
@@ -40,21 +33,12 @@ def cities_frame(host: str, port: int):
     global cities_changed
     global info_add_city
 
-    global show_popup_server_down
-    global show_popup_load_list
-    global show_popup_already_exists
-    global show_popup_deletion_rejected
-    global item_id
+    global show_error_popup
+    global error_popup_message
 
     imgui.begin("Cities")
 
-    show_popup_server_down = popup_server_down(show_popup_server_down)
-    show_popup_load_list = popup_load_list(
-        show_popup_load_list, "cities")
-    show_popup_already_exists = popup_already_exists(
-        show_popup_already_exists, item_id)
-    show_popup_deletion_rejected = popup_deletion_rejected(
-        show_popup_deletion_rejected, item_id)
+    show_error_popup = error_popup(show_error_popup, error_popup_message)
 
     if imgui.button("Load cities list"):
         try:
@@ -73,14 +57,16 @@ def cities_frame(host: str, port: int):
                 show_selectable_cities = False
 
         except requests.exceptions.ConnectionError:
-            show_popup_server_down = True   
+            show_error_popup = True
+            error_popup_message = "Server unavailable.\nPlease retry later."
 
     if imgui.button("Show cities list"):
         if response_get_cities:
             if response_get_cities.status_code == 200:
                 show_selectable_cities = True
         else:
-            show_popup_load_list = True
+            show_error_popup = True
+            error_popup_message = "Load the cities list first."
 
     if show_selectable_cities:
         imgui.begin_child("cities_list", 1200, 200, border=True)
@@ -106,7 +92,8 @@ def cities_frame(host: str, port: int):
                                          "city_size": info[2][:10],
                                          "country": info[3][:50]}
                 except requests.exceptions.ConnectionError:
-                    show_popup_server_down = True
+                    show_error_popup = True
+                    error_popup_message = "Server unavailable.\nPlease retry later."
                     cities_list = []
                     show_selectable_cities = False
                     selectable_cities = {}
@@ -114,7 +101,7 @@ def cities_frame(host: str, port: int):
                     cities_refresh = {}
                     cities_changed = {}
             
-            if show_popup_server_down:
+            if show_error_popup:
                 break
             
             imgui.begin_child("cities_editor", 1200, 200, border=True)
@@ -158,7 +145,8 @@ def cities_frame(host: str, port: int):
                         "city_size": cities_info[city]["city_size"],
                         "country": cities_info[city]["country"]})
                 except requests.exceptions.ConnectionError:
-                    show_popup_server_down = True
+                    show_error_popup = True
+                    error_popup_message = "Server unavailable.\nPlease retry later."
 
     button_clicked_delete_cities = imgui.button("Delete cities")
     if button_clicked_delete_cities:
@@ -169,10 +157,11 @@ def cities_frame(host: str, port: int):
                     response_delete_city = requests.delete(
                         f"http://{host}:{port}/cities/delete-city/{city}")
                     if response_delete_city.status_code == 409:
-                        show_popup_deletion_rejected = True
-                        item_id = city
+                        show_error_popup = True
+                        error_popup_message = response_delete_city.json()["detail"]
                 except requests.exceptions.ConnectionError:
-                    show_popup_server_down = True
+                    show_error_popup = True
+                    error_popup_message = "Server unavailable.\nPlease retry later."
 
     imgui.push_item_width(50)
     _, info_add_city["city_id"] = imgui.input_text(
@@ -204,9 +193,10 @@ def cities_frame(host: str, port: int):
                 json=info_add_city)
 
             if response_add_city.status_code == 422:
-                show_popup_already_exists = True
-                item_id = info_add_city["city_id"]
+                show_error_popup = True
+                error_popup_message = response_add_city.json()["detail"]
         except requests.exceptions.ConnectionError:
-                    show_popup_server_down = True
+            show_error_popup = True
+            error_popup_message = "Server unavailable.\nPlease retry later."
 
     imgui.end()
