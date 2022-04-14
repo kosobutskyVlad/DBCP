@@ -2,12 +2,7 @@ import requests
 
 import imgui
 
-from ..error_popups import (
-    popup_server_down,
-    popup_load_list,
-    popup_already_exists,
-    popup_deletion_rejected,
-    popup_not_found)
+from ..error_popup import error_popup
 
 response_get_stores = None
 stores_list = []
@@ -17,12 +12,8 @@ stores_info = {}
 stores_refresh = {}
 stores_changed = {}
 
-show_popup_server_down = False
-show_popup_load_list = False
-show_popup_already_exists = False
-show_popup_deletion_rejected = False
-show_popup_not_found = False
-item_id = ""
+show_error_popup = False
+error_popup_message = ""
 
 info_add_store = {
     "store_id": "",
@@ -50,15 +41,7 @@ def stores_frame(host: str, port: int):
 
     imgui.begin("Stores")
 
-    show_popup_server_down = popup_server_down(show_popup_server_down)
-    show_popup_load_list = popup_load_list(
-        show_popup_load_list, "stores")
-    show_popup_already_exists = popup_already_exists(
-        show_popup_already_exists, item_id)
-    show_popup_deletion_rejected = popup_deletion_rejected(
-        show_popup_deletion_rejected, item_id)
-    show_popup_not_found = popup_not_found(
-        show_popup_not_found, item_id)
+    show_error_popup = error_popup(show_error_popup, error_popup_message)
 
     if imgui.button("Load stores list"):
         try:
@@ -74,14 +57,16 @@ def stores_frame(host: str, port: int):
                 show_selectable_stores = False
 
         except requests.exceptions.ConnectionError:
-            show_popup_server_down = True 
+            show_error_popup = True
+            error_popup_message = "Server unavailable.\nPlease retry later."
 
     if imgui.button("Show stores list"):
         if response_get_stores:
             if response_get_stores.status_code == 200:
                 show_selectable_stores = True
         else:
-            show_popup_load_list = True
+            show_error_popup = True
+            error_popup_message = "Load the stores list first."
 
     if show_selectable_stores:
         imgui.begin_child("stores_list", 1200, 200, border=True)
@@ -106,7 +91,8 @@ def stores_frame(host: str, port: int):
                                         "city_id": info[2][:4],
                                         "store_size": info[3]}
                 except requests.exceptions.ConnectionError:
-                    show_popup_server_down = True
+                    show_error_popup = True
+                    error_popup_message = "Server unavailable.\nPlease retry later."
                     stores_list = []
                     show_selectable_stores = False
                     selectable_stores = {}
@@ -114,7 +100,7 @@ def stores_frame(host: str, port: int):
                     stores_refresh = {}
                     stores_changed = {}
             
-            if show_popup_server_down:
+            if show_error_popup:
                 break
             
             imgui.begin_child("stores_editor", 1200, 200, border=True)
@@ -154,10 +140,11 @@ def stores_frame(host: str, port: int):
                         "city_id": stores_info[store]["city_id"],
                         "store_size": stores_info[store]["store_size"]})
                     if response_update_store.status_code == 422:
-                        show_popup_not_found = True
-                        item_id = response_update_store.json()["detail"].split(" ")[0]
+                        show_error_popup = True
+                        error_popup_message = response_update_store.json()["detail"]
                 except requests.exceptions.ConnectionError:
-                    show_popup_server_down = True
+                    show_error_popup = True
+                    error_popup_message = "Server unavailable.\nPlease retry later."
 
     button_clicked_delete_stores = imgui.button("Delete stores")
     if button_clicked_delete_stores:
@@ -168,10 +155,11 @@ def stores_frame(host: str, port: int):
                     response_delete_store = requests.delete(
                         f"http://{host}:{port}/stores/delete-store/{store}")
                     if response_delete_store.status_code == 409:
-                        show_popup_deletion_rejected = True
-                        item_id = store
+                        show_error_popup = True
+                        error_popup_message = response_delete_store.json()["detail"]
                 except requests.exceptions.ConnectionError:
-                    show_popup_server_down = True
+                    show_error_popup = True
+                    error_popup_message = "Server unavailable.\nPlease retry later."
 
     imgui.push_item_width(100)
     _, info_add_store["store_id"] = imgui.input_text(
@@ -195,13 +183,10 @@ def stores_frame(host: str, port: int):
             response_add_store = requests.post(
                 f"http://{host}:{port}/stores/add-store", json=info_add_store)
             if response_add_store.status_code == 422:
-                if "already exists" in response_add_store.json()["detail"]:
-                    show_popup_already_exists = True
-                    item_id = info_add_store["store_id"]
-                else:
-                    show_popup_not_found = True
-                    item_id = response_add_store.json()["detail"].split(" ")[0]
+                show_error_popup = True
+                error_popup_message = response_add_store.json()["detail"]
         except requests.exceptions.ConnectionError:
-            show_popup_server_down = True
+            show_error_popup = True
+            error_popup_message = "Server unavailable.\nPlease retry later."
 
     imgui.end()
