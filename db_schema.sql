@@ -37,6 +37,20 @@ CREATE TABLE Products (
 	product_width FLOAT
 );
 
+DROP TABLE IF EXISTS Purchases;
+CREATE TABLE Purchases (
+	purchase_id INT PRIMARY KEY IDENTITY(1, 1),
+	store_id CHAR(5),
+	product_id CHAR(5),
+	purchase_date DATE,
+	price FLOAT,
+	sales INT,
+	discount FLOAT,
+	revenue FLOAT,
+	CONSTRAINT FK_Purchase_Product FOREIGN KEY (product_id) REFERENCES Products(product_id),
+	CONSTRAINT FK_Purchase_Store FOREIGN KEY (store_id) REFERENCES Stores(store_id)
+);
+
 DROP TABLE IF EXISTS LossFunctionParameters;
 CREATE TABLE LossFunctionParameters (
 	parameters_id INT PRIMARY KEY IDENTITY(1, 1),
@@ -51,18 +65,4 @@ CREATE TABLE LossFunctionParameters (
 	product_cost_coef FLOAT,
 	CONSTRAINT FK_Parameter_Product FOREIGN KEY (product_id) REFERENCES Products(product_id),
 	CONSTRAINT FK_Parameter_Store FOREIGN KEY (store_id) REFERENCES Stores(store_id)
-);
-
-DROP TABLE IF EXISTS Purchases;
-CREATE TABLE Purchases (
-	purchase_id INT PRIMARY KEY IDENTITY(1, 1),
-	store_id CHAR(5),
-	product_id CHAR(5),
-	purchase_date DATE,
-	price FLOAT,
-	sales INT,
-	discount FLOAT,
-	revenue FLOAT,
-	CONSTRAINT FK_Purchase_Product FOREIGN KEY (product_id) REFERENCES Products(product_id),
-	CONSTRAINT FK_Purchase_Store FOREIGN KEY (store_id) REFERENCES Stores(store_id)
 );

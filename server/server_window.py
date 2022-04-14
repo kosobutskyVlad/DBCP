@@ -3,8 +3,8 @@ import sys
 import OpenGL.GL as gl
 import imgui
 
-from render_utils import *
-from server_process import *
+from render_utils import start_window
+from server_process import start_server, stop_server
 
 server_status = "offline"
 

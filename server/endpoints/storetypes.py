@@ -1,5 +1,12 @@
+from typing import Optional
+
 import pyodbc
+from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException
+
+class StoreType(BaseModel):
+    storetype_id: str
+    storetype_description: Optional[str] = None
 
 router = APIRouter(
     prefix="/storetypes",
@@ -45,10 +52,10 @@ def get_storetype(storetype_id: str):
         return {"Data": data}
 
     raise HTTPException(status_code=404,
-                        detail=f"{storetype_id} not found")
+                        detail=f"{storetype_id} not found.")
 
-@router.post("/add-storetype/{storetype_id}")
-def add_storetype(storetype_id: str, storetype_description: str):
+@router.post("/add-storetype")
+def add_storetype(storetype: StoreType):
 
     conn = pyodbc.connect(
         "Driver={SQL Server Native Client 11.0};"
@@ -58,7 +65,7 @@ def add_storetype(storetype_id: str, storetype_description: str):
 
     cursor = conn.cursor()
     cursor.execute(f"SELECT storetype_id FROM StoreTypes \
-                   WHERE storetype_id = '{storetype_id}'")
+                   WHERE storetype_id = '{storetype.storetype_id[:4]}'")
     data = []
     for row in cursor:
         data.append(list(row))
@@ -66,17 +73,19 @@ def add_storetype(storetype_id: str, storetype_description: str):
     if data:
         conn.close()
         raise HTTPException(status_code=422,
-                            detail=f"{storetype_id} already exists")
+                            detail=f"{storetype.storetype_id[:4]} already exists.")
 
     cursor.execute(f"INSERT INTO StoreTypes \
-                   VALUES('{storetype_id}', '{storetype_description}')")
+                   VALUES('{storetype.storetype_id[:4]}', \
+                   '{storetype.storetype_description[:100]}')")
     conn.commit()
     conn.close()
-    return {"storetype_id": storetype_id,
-            "storetype_description": storetype_description}
+    return {"storetype_id": storetype.storetype_id[:4],
+            "storetype_description":
+            storetype.storetype_description[:100]}
 
-@router.put("/update-storetype/{storetype_id}")
-def update_storetype(storetype_id: str, storetype_description: str):
+@router.put("/update-storetype")
+def update_storetype(storetype: StoreType):
 
     conn = pyodbc.connect(
         "Driver={SQL Server Native Client 11.0};"
@@ -86,7 +95,7 @@ def update_storetype(storetype_id: str, storetype_description: str):
 
     cursor = conn.cursor()
     cursor.execute(f"SELECT storetype_id FROM StoreTypes \
-                   WHERE storetype_id = '{storetype_id}'")
+                   WHERE storetype_id = '{storetype.storetype_id}'")
     data = []
     for row in cursor:
         data.append(list(row))
@@ -94,16 +103,17 @@ def update_storetype(storetype_id: str, storetype_description: str):
     if not data:
         conn.close()
         raise HTTPException(status_code=404,
-                            detail=f"{storetype_id} not found")
+                            detail=f"{storetype.storetype_id} not found.")
 
     cursor = conn.cursor()
     cursor.execute(f"UPDATE StoreTypes SET \
-                   storetype_description = '{storetype_description}' \
-                   WHERE storetype_id = '{storetype_id}'")
+                   storetype_description = \
+                   '{storetype.storetype_description[:100]}' \
+                   WHERE storetype_id = '{storetype.storetype_id}'")
     conn.commit()
 
     cursor.execute(f"SELECT * FROM StoreTypes \
-                   WHERE storetype_id = '{storetype_id}'")
+                   WHERE storetype_id = '{storetype.storetype_id}'")
     data = []
     for row in cursor:
         data.append(list(row))
@@ -130,10 +140,15 @@ def delete_storetype(storetype_id: str):
     if not data:
         conn.close()
         raise HTTPException(status_code=404,
-                            detail=f"{storetype_id} not found")
+                            detail=f"{storetype_id} not found.")
 
-    cursor.execute(f"DELETE FROM StoreTypes \
+    try:
+        cursor.execute(f"DELETE FROM StoreTypes \
                    WHERE storetype_id = '{storetype_id}'")
-    conn.commit()
-    conn.close()
+        conn.commit()
+    except pyodbc.IntegrityError:
+        raise HTTPException(status_code=409,
+                            detail=f"{storetype_id} is being referenced by a foreign key.")
+    finally:
+        conn.close()
     return {"storetype_id": storetype_id, "is_deleted": True}

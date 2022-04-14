@@ -5,7 +5,8 @@ import glfw
 from imgui.integrations.glfw import GlfwRenderer
 import OpenGL.GL as gl
 
-def start_window(width: int, height: int, window_name: str, render_function):
+def start_window(width: int, height: int,
+                 window_name: str, render_function):
     """
     width: window width
     height: window height

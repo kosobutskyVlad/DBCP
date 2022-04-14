@@ -3,7 +3,13 @@ import multiprocessing
 from fastapi import FastAPI, APIRouter
 import uvicorn
 
-from endpoints import cities, storetypes, stores, products, parameters, purchases
+from endpoints import (
+    cities,
+    storetypes,
+    stores,
+    products,
+    parameters,
+    purchases)
 
 server_process = None
 
