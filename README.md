@@ -1,5 +1,5 @@
 
-# Databases and Data Banks Course Project
+# Databases and Data Banks Course Project (WIP)
 
 
 A distributed system with server providing an access to a retail database via REST API and client
@@ -9,4 +9,4 @@ The dataset was taken from Kaggle _(find and place an original link here later)_
 
 REST API was written using FastAPI framework.
 
-GUI is written using PyImGUI with a GLFW integration.
+GUI is written using PyImGUI with the GLFW integration.
