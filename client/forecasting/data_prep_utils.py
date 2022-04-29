@@ -5,8 +5,14 @@ def ffill_history(response):
     dataframe = pd.DataFrame(
         purchase_history,
         columns=[
-            "id", "store_id", "product_id", "purchase_date",
-            "price", "sales", "discount", "revenue"
+            "id",
+            "store_id",
+            "product_id",
+            "purchase_date",
+            "price",
+            "sales",
+            "discount",
+            "revenue"
         ]
     )
     dataframe = dataframe.loc[:, ["purchase_date","sales"]]
@@ -14,7 +20,7 @@ def ffill_history(response):
     dataframe["purchase_date"] = pd.to_datetime(
         dataframe["purchase_date"]
     )
-
+    
     date_range = pd.DataFrame(pd.date_range(
         dataframe["purchase_date"].min(),
         dataframe["purchase_date"].max(),
@@ -23,8 +29,9 @@ def ffill_history(response):
     full_history = date_range.merge(
         dataframe, "left",
         left_on=0, right_on="purchase_date"
-    ).drop([0], axis=1)
-    return full_history.fillna(method='ffill')
+    ).drop(["purchase_date"], axis=1)
+    full_history = full_history.rename(columns={0: "purchase_date"})
+    return full_history.fillna(method="ffill")
 
 def aggregate_history(history):
     zero_values_count = (history["purchase_date"] == 0).sum()
