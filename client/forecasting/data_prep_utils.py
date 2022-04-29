@@ -42,6 +42,4 @@ def aggregate_history(history):
         return history.resample('2W', on="purchase_date").sum()
     if zv_ratio > 0.6:
         return history.resample('W', on="purchase_date").sum()
-    if zv_ratio > 0.2:
-        return history.resample('3D', on="purchase_date").sum()
-    return history
+    return history.resample("3D", on="purchase_date").sum(), "3D"
