@@ -35,13 +35,7 @@ def storetypes_frame(host: str, port: int):
 
     imgui.begin("Storetypes")
 
-    show_popup_server_down = popup_server_down(show_popup_server_down)
-    show_popup_load_list = popup_load_list(
-        show_popup_load_list, "storetypes")
-    show_popup_already_exists = popup_already_exists(
-        show_popup_already_exists, item_id)
-    show_popup_deletion_rejected = popup_deletion_rejected(
-        show_popup_deletion_rejected, item_id)
+    show_error_popup = error_popup(show_error_popup, error_popup_message)
 
     if imgui.button("Load storetypes list"):
         try:
@@ -60,14 +54,16 @@ def storetypes_frame(host: str, port: int):
                 show_selectable_storetypes = False
 
         except requests.exceptions.ConnectionError:
-            show_popup_server_down = True
+            show_error_popup = True
+            error_popup_message = "Server unavailable.\nPlease retry later."
         
     if imgui.button("Show storetypes list"):
         if response_get_storetypes:
             if response_get_storetypes.status_code == 200:
                 show_selectable_storetypes = True
         else:
-            show_popup_load_list = True
+            show_error_popup = True
+            error_popup_message = "Load the storetypes list first."
 
     if show_selectable_storetypes:
         imgui.begin_child("storetypes_list", 1200, 200, border=True)
@@ -91,7 +87,8 @@ def storetypes_frame(host: str, port: int):
                     storetypes_info[storetype] = {
                         "storetype_description": info[1][:100]}
                 except requests.exceptions.ConnectionError:
-                    show_popup_server_down = True
+                    show_error_popup = True
+                    error_popup_message = "Server unavailable.\nPlease retry later."
                     storetypes_list = []
                     show_selectable_storetypes = False
                     selectable_storetypes = {}
@@ -99,7 +96,7 @@ def storetypes_frame(host: str, port: int):
                     storetypes_refresh = {}
                     storetypes_changed = {}
 
-            if show_popup_server_down:
+            if show_error_popup:
                 break
             
             imgui.begin_child("storetypes_editor",
@@ -126,7 +123,8 @@ def storetypes_frame(host: str, port: int):
                         json={"storetype_id": storetype,
                         "storetype_description": storetypes_info[storetype]["storetype_description"]})
                 except requests.exceptions.ConnectionError:
-                    show_popup_server_down = True
+                    show_error_popup = True
+                    error_popup_message = "Server unavailable.\nPlease retry later."
 
     button_clicked_delete_storetypes = imgui.button("Delete storetypes")
     if button_clicked_delete_storetypes:
@@ -137,10 +135,11 @@ def storetypes_frame(host: str, port: int):
                     response_delete_storetype = requests.delete(
                         f"http://{host}:{port}/storetypes/delete-storetype/{storetype}")
                     if response_delete_storetype.status_code == 409:
-                        show_popup_deletion_rejected = True
-                        item_id = storetype
+                        show_error_popup = True
+                        error_popup_message = response_delete_storetype.json()["detail"]
                 except requests.exceptions.ConnectionError:
-                    show_popup_server_down = True
+                    show_error_popup = True
+                    error_popup_message = "Server unavailable.\nPlease retry later."
 
     imgui.push_item_width(50)
     _, info_add_storetype["storetype_id"] = imgui.input_text(
@@ -163,9 +162,10 @@ def storetypes_frame(host: str, port: int):
                 json=info_add_storetype)
 
             if response_add_storetype.status_code == 422:
-                show_popup_already_exists = True
-                item_id = info_add_storetype["storetype_id"]
+                show_error_popup = True
+                error_popup_message = response_add_storetype.json()["detail"]
         except requests.exceptions.ConnectionError:
-            show_popup_server_down = True
+            show_error_popup = True
+            error_popup_message = "Server unavailable.\nPlease retry later."
 
     imgui.end()
