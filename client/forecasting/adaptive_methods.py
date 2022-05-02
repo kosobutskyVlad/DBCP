@@ -1,4 +1,5 @@
 from itertools import repeat
+from abc import ABC, abstractmethod
 
 import numpy as np
 
@@ -20,7 +21,19 @@ def get_loss(y_true, y_pred, params):
             + (params[5] - params[3])*(params[2] + params[4])
             + (offset - params[5])*(params[2] + params[4] + params[6]))
 
-class EMA():
+
+class Model(ABC):
+    
+    @abstractmethod
+    def predict(self):
+        pass
+    
+    @abstractmethod
+    def fit(self):
+        pass
+
+
+class EMA(Model):
     alpha = 0.01
     y_prev = 0
 
@@ -57,7 +70,8 @@ class EMA():
         
         self.alpha = best_alpha
 
-class Holts():
+
+class Holts(Model):
     alpha1 = 0.01
     alpha2 = 0.01
     a = 0
@@ -106,7 +120,8 @@ class Holts():
         self.alpha1 = best_alpha[0]
         self.alpha2 = best_alpha[1]
 
-class TrackingSignal():
+
+class TrackingSignal(Model):
     error_ema = EMA(0.05, 0)
     error_abs_ema = EMA(0.05, 0)
     
@@ -121,11 +136,11 @@ class TrackingSignal():
     
     def fit(self, y, loss_params):
         best_loss = np.inf
-        best_g = (0.05, 0.05)
 
         for g1 in np.arange(0.05, 0.101, 0.005):
             for g2 in np.arange(0.05, 0.101, 0.005):
                 y_pred = []
+                best_g = g1, g2
                 self.error_ema = EMA(g1, 0)
                 self.error_abs_ema = EMA(g2, 0)
 
@@ -143,3 +158,37 @@ class TrackingSignal():
 
         self.error_ema = EMA(best_g[0], 0)
         self.error_abs_ema = EMA(best_g[1], 0)
+
+
+class AdaptiveComposition(Model):
+    models = []
+    errors_ema = []
+    predictions = None
+    
+    def __init__(self, models):
+        for model in models:
+            self.models.append(model)
+            self.errors_ema.append(EMA(0.05, 0.01))
+        self.predictions = np.full((len(self.models), ), fill_value=1)
+    
+    def predict(self, y_true):
+        
+        err_pred = np.full((len(self.models), ), fill_value=0.01)
+        for i, err_ema in enumerate(self.errors_ema):
+            err = y_true - self.predictions[i]
+
+            err_pred[i] = err_ema.predict(err)
+            if err_pred[i] == 0:
+                err_pred[i] = 0.01
+
+        weights = [1/err for err in err_pred]
+        weights = np.array([w/sum(weights) for w in weights])
+        self.predictions = np.full((len(self.models), ), fill_value=0)
+        for i, model in enumerate(self.models):
+            self.predictions[i] = model.predict(y_true)
+
+        return np.dot(self.predictions, weights.T)
+    
+    def fit(self, y, loss_params):
+        for model in self.models:
+            model.fit(y, loss_params)
