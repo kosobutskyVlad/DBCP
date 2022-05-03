@@ -2,7 +2,7 @@ from itertools import repeat
 
 import numpy as np
 
-from base import Model
+from forecasting.models.base import Model
 from ..loss_function import get_loss_derivative
 
 class Autoregression(Model):

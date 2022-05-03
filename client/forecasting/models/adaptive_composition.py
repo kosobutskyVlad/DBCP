@@ -1,8 +1,8 @@
 import numpy as np
 
-from base import Model
-from ema import EMA
-from autoregression import Autoregression
+from forecasting.models.base import Model
+from forecasting.models.ema import EMA
+from forecasting.models.autoregression import Autoregression
 
 class AdaptiveComposition(Model):
     models = []

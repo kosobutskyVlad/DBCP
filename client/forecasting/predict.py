@@ -1,9 +1,9 @@
-from data_prep_utils import prepare_data
-from models.ema import EMA
-from models.holts import Holts
-from models.tracking_signal import TrackingSignal
-from models.autoregression import Autoregression
-from models.adaptive_composition import AdaptiveComposition
+from forecasting.data_prep_utils import prepare_data
+from forecasting.models.ema import EMA
+from forecasting.models.holts import Holts
+from forecasting.models.tracking_signal import TrackingSignal
+from forecasting.models.autoregression import Autoregression
+from forecasting.models.adaptive_composition import AdaptiveComposition
 
 def predict(dataframe, aggr_window, loss_parameters):
     ema = EMA()
@@ -17,8 +17,8 @@ def predict(dataframe, aggr_window, loss_parameters):
 
     y_pred = []
 
-    for y_true in dataframe["sales"].values[:-1]:
-        y_pr = ac.predict(y_true)
+    for i, y_true in enumerate(y):
+        y_pr = ac.predict(X[i], y_true)
         y_pred.append(y_pr)
 
     return y_pred

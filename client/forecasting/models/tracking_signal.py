@@ -2,8 +2,8 @@ from itertools import repeat
 
 import numpy as np
 
-from base import Model
-from ema import EMA
+from forecasting.models.base import Model
+from forecasting.models.ema import EMA
 from ..loss_function import get_loss
 
 class TrackingSignal(Model):
