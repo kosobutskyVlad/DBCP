@@ -24,7 +24,7 @@ def get_prediction(store_id: str, product_id: str, host: str, port: int):
             )
 
         response_get_product = requests.get(
-            f"http://{host}:{port}/stores/get-product/{product_id}"
+            f"http://{host}:{port}/products/get-product/{product_id}"
         )
 
         if response_get_product.status_code != 200:
