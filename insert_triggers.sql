@@ -56,7 +56,7 @@ INSTEAD OF INSERT
 AS
 BEGIN
 	INSERT INTO Stock(store_id, product_id, stock)
-	SELECT * FROM inserted
+	SELECT store_id, product_id, stock FROM inserted
 	WHERE CONCAT(product_id, store_id) NOT IN (SELECT CONCAT(product_id, store_id) FROM Stock)
 		AND product_id IN (SELECT product_id FROM Products) AND store_id IN (SELECT store_id FROM Stores)
 END
