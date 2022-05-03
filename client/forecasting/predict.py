@@ -1,4 +1,4 @@
-from forecasting.data_prep_utils import prepare_data
+from forecasting.data_prep_utils import prepare_data, FEATURE_COUNT
 from forecasting.models.ema import EMA
 from forecasting.models.holts import Holts
 from forecasting.models.tracking_signal import TrackingSignal
@@ -9,9 +9,9 @@ def predict(dataframe, aggr_window, loss_parameters):
     ema = EMA()
     holts = Holts()
     ts = TrackingSignal()
-    ag = Autoregression(12)
+    ag = Autoregression(FEATURE_COUNT[aggr_window])
 
-    ac = AdaptiveComposition([ema, holts, ts, ag], "3D")
+    ac = AdaptiveComposition([ema, holts, ts, ag], aggr_window)
     X, y = prepare_data(dataframe, aggr_window)
     ac.fit(X, y, loss_parameters)
 
