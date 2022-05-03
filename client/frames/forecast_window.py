@@ -2,7 +2,7 @@ import requests
 
 import imgui
 
-from frames.load_image import get_textureID
+from frames.load_image import create_image, get_textureID
 from frames.error_popup import error_popup
 from forecasting.data_prep_utils import aggregate_history, ffill_history
 from forecasting.predict import predict
@@ -72,7 +72,7 @@ def forecast_window(host: str, port: int):
                 error_popup_message = response_get_purchases.json()["detail"]
 
             response_get_parameters = requests.get(
-                f"http://{host}:{port}/parameters/get-parameters/",
+                f"http://{host}:{port}/parameters/get-parameters",
                 params={"store_id": input_store_id,
                         "product_id": input_product_id})
 
@@ -99,9 +99,8 @@ def forecast_window(host: str, port: int):
             error_popup_message = "Server unavailable.\nPlease retry later."
 
     if update_image:
-        textureID, image_size = get_textureID(
-            purchases_dataframe["sales"].values, prediction_results
-        )
+        create_image(purchases_dataframe, prediction_results, aggregation_window)
+        textureID, image_size = get_textureID()
         update_image = False
 
     if prediction_results is not None:
