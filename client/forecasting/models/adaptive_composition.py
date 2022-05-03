@@ -5,11 +5,13 @@ from forecasting.models.ema import EMA
 from forecasting.models.autoregression import Autoregression
 
 class AdaptiveComposition(Model):
-    models = []
-    errors_ema = []
+    models = None
+    errors_ema = None
     predictions = None
     
     def __init__(self, models, aggr_window=None):
+        self.models = []
+        self.errors_ema = []
         for model in models:
             self.models.append(model)
             self.errors_ema.append(EMA(0.05, 0.01))
@@ -42,6 +44,7 @@ class AdaptiveComposition(Model):
             if isinstance(model, Autoregression):
                 if self.aggr_window is None:
                     raise ValueError("Specify aggr_window if using Autoregression")
+                print(model.weights)
                 model.fit(X, y, loss_params)
             else:
                 model.fit(y, loss_params)
