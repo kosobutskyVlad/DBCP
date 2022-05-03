@@ -11,7 +11,8 @@ router = APIRouter(
     responses={404: {"description": "Not found"}})
 
 @router.get("")
-def get_prediction(store_id: str, product_id: str, host: str, port: int):
+def get_prediction(store_id: str, product_id: str,
+                   host: str = "127.0.0.1", port: int = 5000):
     try:
         response_get_store = requests.get(
             f"http://{host}:{port}/stores/get-store/{store_id}"
