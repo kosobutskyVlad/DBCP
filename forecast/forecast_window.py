@@ -51,7 +51,14 @@ def frame_client():
             start_forecast()
             forecast_status = "running"
         except Exception:
-            forecast_status = "could not start a server"
+            forecast_status = "could not start a forecast"
+
+    if imgui.button("Stop forecast"):
+        stop_forecast()
+        forecast_status = "offline"
+    
+    imgui.text(f"Forecast status: {forecast_status}")
+
     imgui.separator()
 
     if imgui.button("Open main menu"):
