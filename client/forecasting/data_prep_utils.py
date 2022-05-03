@@ -1,6 +1,14 @@
 import pandas as pd
 import numpy as np
 
+FEATURE_COUNT = {
+    "3D": 12,
+    "W": 10,
+    "2W": 8,
+    "M": 7
+}
+
+
 def ffill_history(response):
     purchase_history = response.json()["purchases"]
     dataframe = pd.DataFrame(
@@ -46,14 +54,8 @@ def aggregate_history(history):
     return history.resample("3D", on="purchase_date").sum(), "3D"
 
 def prepare_data(dataframe, aggr_window):
-    feature_count = {
-        "3D": 12,
-        "W": 10,
-        "2W": 8,
-        "M": 7
-    }
     y = dataframe.iloc[:, 0].values
-    X = np.zeros((len(dataframe.index), feature_count[aggr_window]))
+    X = np.zeros((len(dataframe.index), FEATURE_COUNT[aggr_window]))
 
     for i in range(6):
         X[i+1:, i] = dataframe.iloc[:-i-1].values[:, 0]
