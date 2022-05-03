@@ -2,8 +2,7 @@ import requests
 
 import imgui
 
-from ..error_popup import (
-    error_popup)
+from ..error_popup import error_popup
 
 response_get_parameters = None
 parameters_list = []
