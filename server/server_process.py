@@ -9,7 +9,8 @@ from endpoints import (
     stores,
     products,
     parameters,
-    purchases)
+    purchases
+)
 
 server_process = None
 
@@ -27,8 +28,10 @@ def start_server():
     server_process = multiprocessing.Process(
         target=uvicorn.run,
         args=("server_process:app",),
-        kwargs={"host": "127.0.0.1", "port": 5001})
+        kwargs={"host": "127.0.0.1", "port": 5000}
+    )
     server_process.start()
 
 def stop_server():
-    server_process.terminate()
+    if server_process is not None:
+        server_process.terminate()
