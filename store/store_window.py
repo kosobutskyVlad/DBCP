@@ -8,13 +8,9 @@ from render_utils import start_window
 
 server_host = "127.0.0.1"
 server_port = "5000"
-server_prev_host = server_host
-server_prev_port = server_port
 
 forecast_host = "127.0.0.1"
 forecast_port = "5001"
-forecast_prev_host = forecast_host
-forecast_prev_port = forecast_port
 
 def frame_server():
 

@@ -11,8 +11,6 @@ forecast_status = "offline"
 
 host = "127.0.0.1"
 port = "5000"
-prev_host = host
-prev_port = port
 
 show_main_menu = False
 
