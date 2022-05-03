@@ -186,13 +186,11 @@ def purchases_frame(host: str, port: int):
                         f"http://{host}:{port}/purchases/update-purchase/{purchases_list[i][0]}",
                         json={"store_id": purchases_info[purchase]["store_id"],
                         "product_id": purchases_info[purchase]["product_id"],
-                        "loyalty_charge_x": purchases_info[purchase]["loyalty_charge_x"],
-                        "loyalty_charge_coef": purchases_info[purchase]["loyalty_charge_coef"],
-                        "storage_cost_coef": purchases_info[purchase]["storage_cost_coef"],
-                        "bank_rate_x": purchases_info[purchase]["bank_rate_x"],
-                        "bank_rate_coef": purchases_info[purchase]["bank_rate_coef"],
-                        "product_cost_x": purchases_info[purchase]["product_cost_x"],
-                        "product_cost_coef": purchases_info[purchase]["product_cost_coef"]})
+                        "purchase_date": purchases_info[purchase]["purchase_date"],
+                        "price": purchases_info[purchase]["price"],
+                        "sales": purchases_info[purchase]["sales"],
+                        "discount": purchases_info[purchase]["discount"],
+                        "revenue": purchases_info[purchase]["revenue"]})
                     if response_update_purchase.status_code == 422:
                         show_error_popup = True
                         error_popup_message = response_update_purchase.json()["detail"]
