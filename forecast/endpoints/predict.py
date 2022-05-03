@@ -69,4 +69,4 @@ def get_prediction(store_id: str, product_id: str,
         purchases_dataframe, aggregation_window, loss_parameters
     )[-1]
 
-    return prediction_results
+    return round(prediction_results)
