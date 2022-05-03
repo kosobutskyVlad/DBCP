@@ -43,14 +43,14 @@ def ffill_history(response):
     return full_history.fillna(method="ffill")
 
 def aggregate_history(history):
-    zero_values_count = (history["purchase_date"] == 0).sum()
+    zero_values_count = (history["sales"] == 0).sum()
     zv_ratio = zero_values_count / len(history.index)
     if zv_ratio > 0.96:
-        return history.resample('M', on="purchase_date").sum()
+        return history.resample('M', on="purchase_date").sum(), "M"
     if zv_ratio > 0.8:
-        return history.resample('2W', on="purchase_date").sum()
+        return history.resample('2W', on="purchase_date").sum(), "2W"
     if zv_ratio > 0.6:
-        return history.resample('W', on="purchase_date").sum()
+        return history.resample('W', on="purchase_date").sum(), "W"
     return history.resample("3D", on="purchase_date").sum(), "3D"
 
 def prepare_data(dataframe, aggr_window):
