@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 def ffill_history(response):
     purchase_history = response.json()["purchases"]
@@ -43,3 +44,39 @@ def aggregate_history(history):
     if zv_ratio > 0.6:
         return history.resample('W', on="purchase_date").sum()
     return history.resample("3D", on="purchase_date").sum(), "3D"
+
+def prepare_data(dataframe, aggr_window):
+    feature_count = {
+        "3D": 12,
+        "W": 10,
+        "2W": 8,
+        "M": 7
+    }
+    y = dataframe.iloc[:, 0].values
+    X = np.zeros((len(dataframe.index), feature_count[aggr_window]))
+
+    for i in range(6):
+        X[i+1:, i] = dataframe.iloc[:-i-1].values[:, 0]
+
+    if aggr_window == "M":
+        X[11:, 6] = dataframe.iloc[:-11].values[:, 0]
+
+    if aggr_window == "2W":
+        X[12:, 6] = dataframe.iloc[:-12].values[:, 0]
+        X[26:, 7] = dataframe.iloc[:-26].values[:, 0]
+
+    if aggr_window == "W":
+        X[7:, 6] = dataframe.iloc[:-7].values[:, 0]
+        X[12:, 7] = dataframe.iloc[:-12].values[:, 0]
+        X[26:, 8] = dataframe.iloc[:-22].values[:, 0]
+        X[52:, 9] = dataframe.iloc[:-52].values[:, 0]
+
+    if aggr_window == "3D":
+        X[7:, 6] = dataframe.iloc[:-7].values[:, 0]
+        X[10:, 7] = dataframe.iloc[:-10].values[:, 0]
+        X[20:, 8] = dataframe.iloc[:-20].values[:, 0]
+        X[30:, 9] = dataframe.iloc[:-30].values[:, 0]
+        X[61:, 7] = dataframe.iloc[:-61].values[:, 0]
+        X[122:, 8] = dataframe.iloc[:-122].values[:, 0]
+
+    return X, y
