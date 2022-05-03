@@ -14,10 +14,7 @@ port = "5000"
 prev_host = host
 prev_port = port
 
-is_server_running = False
 show_main_menu = False
-
-show_popup_server_not_available = False
 
 def frame_client():
     global forecast_status
@@ -25,10 +22,7 @@ def frame_client():
     global host
     global port
 
-    global is_server_running
     global show_main_menu
-
-    global show_popup_server_not_available
 
     gl.glClearColor(0.1, 0.1, 0.1, 1)
     gl.glClear(gl.GL_COLOR_BUFFER_BIT)
