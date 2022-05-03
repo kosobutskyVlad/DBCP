@@ -14,7 +14,7 @@ port = "5000"
 
 show_main_menu = False
 
-def frame_client():
+def frame_forecast():
     global forecast_status
 
     global host
@@ -72,7 +72,7 @@ def frame_client():
             
 
 def main():
-    start_window(1600, 900, "Sales Forecasting: Client", frame_client)
+    start_window(1600, 900, "Sales Forecasting: Client", frame_forecast)
 
 
 if __name__ == '__main__':
