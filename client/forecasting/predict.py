@@ -12,6 +12,7 @@ def predict(dataframe, aggr_window, loss_parameters):
     ag = Autoregression(FEATURE_COUNT[aggr_window])
 
     ac = AdaptiveComposition([ema, holts, ts, ag], aggr_window)
+
     X, y = prepare_data(dataframe, aggr_window)
     ac.fit(X, y, loss_parameters)
 
@@ -22,6 +23,3 @@ def predict(dataframe, aggr_window, loss_parameters):
         y_pred.append(y_pr)
 
     return y_pred
-
-
-
