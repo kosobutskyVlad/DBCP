@@ -6,8 +6,9 @@ from frames.viewers.stores_frame import stores_frame
 from frames.viewers.products_frame import products_frame
 from frames.viewers.purchases_frame import purchases_frame
 from frames.viewers.parameters_frame import parameters_frame
+from frames.forecast_window import forecast_window
 
-active = {
+active_editors = {
     "storetypes": False,
     "cities": False,
     "stores": False,
@@ -16,31 +17,32 @@ active = {
     "parameters": False,
 }
 
+show_forecast_window = False
+
 def main_menu_frame(host, port):
 
-    global active
+    global active_editors
+    global show_forecast_window
 
     imgui.begin("Main menu")
 
-    for frame in active:
-        _, active[frame] = imgui.checkbox(f"Show {frame} frame", active[frame])
+    for editor in active_editors:
+        _, active_editors[editor] = imgui.checkbox(
+            f"Show {editor} editor",
+            active_editors[editor]
+        )
+
+    imgui.separator()
+    _, show_forecast_window = imgui.checkbox(
+            f"Show forecast window",
+            show_forecast_window
+        )
 
     imgui.end()
 
-    if active["cities"]:
-        cities_frame(host, port)
+    for editor in active_editors:
+        if active_editors[editor]:
+            eval(f"{editor}_frame(host, port)")
 
-    if active["storetypes"]:
-        storetypes_frame(host, port)
-
-    if active["stores"]:
-        stores_frame(host, port)
-
-    if active["products"]:
-        products_frame(host, port)
-
-    if active["purchases"]:
-        purchases_frame(host, port)
-
-    if active["parameters"]:
-        parameters_frame(host, port)
+    if show_forecast_window:
+        forecast_window(host, port)
