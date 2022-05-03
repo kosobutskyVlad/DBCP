@@ -3,13 +3,27 @@ import matplotlib.pyplot as plt
 import numpy as np
 import OpenGL.GL as gl
 
-def create_image(purchases_df, prediction_results):
+TICKS_STEP = {
+    "3D": 15,
+    "W": 10,
+    "2W": 5,
+    "M": 2
+}
+
+
+def create_image(purchases_df, prediction_results, aggr_window):
     plt.plot(prediction_results, label="predicted")
     plt.plot(purchases_df["sales"].values, alpha=0.6, label="true")
-    plt.xticks(fontsize=12)
+    plt.xticks(
+        np.arange(len(purchases_df.index), step=TICKS_STEP[aggr_window]),
+        purchases_df.index[::TICKS_STEP[aggr_window]].strftime('%Y-%m-%d'),
+        fontsize=10, rotation=90
+    )
     plt.yticks(fontsize=12)
     plt.legend(fontsize=14)
-    plt.savefig('prediction.jpg')
+    plt.savefig('prediction.jpg', bbox_inches="tight")
+    plt.close()
+
 
 def get_textureID():
     image = Image.open("prediction.jpg") 
