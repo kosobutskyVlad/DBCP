@@ -1,12 +1,10 @@
 import sys
-import requests
 
 import OpenGL.GL as gl
 import imgui
 
 from render_utils import start_window
 from frames.main_menu_frame import main_menu_frame
-from test_window import show_test_window
 
 host = "127.0.0.1"
 port = "5001"
@@ -26,7 +24,7 @@ def frame_client():
     global show_main_menu
 
     global show_popup_server_not_available
-    
+
     gl.glClearColor(0.1, 0.1, 0.1, 1)
     gl.glClear(gl.GL_COLOR_BUFFER_BIT)
 
@@ -41,18 +39,18 @@ def frame_client():
 
             imgui.end_menu()
         imgui.end_main_menu_bar()
-    
-    
+
+
     imgui.begin("Connection Settings")
     _, host = imgui.input_text("Server host", host, 256)    
     _, port = imgui.input_text("Server port", port, 256)
-    
+
     if imgui.button("Open main menu"):
             show_main_menu = True
 
     if imgui.button("Close main menu"):
         show_main_menu = False
-    
+
     imgui.end()
 
     if show_main_menu:
@@ -60,7 +58,6 @@ def frame_client():
             
 
 def main():
-    #start_window(1600, 900, "Sales Forecasting: Client", show_test_window)
     start_window(1600, 900, "Sales Forecasting: Client", frame_client)
 
 
