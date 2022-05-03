@@ -40,7 +40,7 @@ def frame_client():
 
     imgui.begin("Network settings")
     imgui.text("Server connection settings")
-    _, host = imgui.input_text("Server host", host, 256)    
+    _, host = imgui.input_text("Server host", host, 256)
     _, port = imgui.input_text("Server port", port, 256)
     imgui.separator()
 
