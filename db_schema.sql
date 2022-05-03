@@ -37,6 +37,14 @@ CREATE TABLE Products (
 	product_width FLOAT
 );
 
+DROP TABLE IF EXISTS Stock;
+CREATE TABLE Stock (
+	stock_id INT PRIMARY KEY IDENTITY(1, 1),
+	store_id CHAR(5),
+	product_id CHAR(5),
+	stock INT
+);
+
 DROP TABLE IF EXISTS Purchases;
 CREATE TABLE Purchases (
 	purchase_id INT PRIMARY KEY IDENTITY(1, 1),
