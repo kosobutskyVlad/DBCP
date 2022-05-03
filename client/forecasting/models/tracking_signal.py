@@ -15,7 +15,10 @@ class TrackingSignal(Model):
     
     def predict(self, y_true):
         error = y_true - self.y_prev
-        self.alpha = abs(self.error_ema.predict(error) / self.error_abs_ema.predict(abs(error)))
+        error_pred = self.error_abs_ema.predict(abs(error))
+        if error_pred == 0:
+            error_pred = 0.01
+        self.alpha = abs(self.error_ema.predict(error) / error_pred)
         self.y_prev = self.alpha*y_true + (1-self.alpha)*self.y_prev
         return self.y_prev
     
