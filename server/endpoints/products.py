@@ -59,6 +59,28 @@ def get_product(product_id: str):
     raise HTTPException(status_code=404,
                         detail=f"{product_id} not found.")
 
+@router.get("/get-by-storeid")
+def get_product_by_storeid(store_id: str):
+    conn = pyodbc.connect(
+        "Driver={SQL Server Native Client 11.0};"
+        "Server=DESKTOP-P8N0IJI;"
+        "Database=retail;"
+        "Trusted_Connection=yes;")
+
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT DISTINCT product_id FROM LossFunctionParameters \
+                   WHERE store_id = '{store_id}'")
+    data = []
+    for row in cursor:
+        data.append(list(row))
+    conn.close()
+
+    if data:
+        return {"Data": data}
+
+    raise HTTPException(status_code=404,
+                        detail=f"{store_id} not found.")
+
 @router.post("/add-product")
 def add_product(product: Product):
 
