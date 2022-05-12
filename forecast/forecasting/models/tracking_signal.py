@@ -7,12 +7,13 @@ from forecasting.models.ema import EMA
 from ..loss_function import get_loss
 
 class TrackingSignal(Model):
-    error_ema = EMA(0.05, 0)
-    error_abs_ema = EMA(0.05, 0)
-    
     alpha = 0.01
     y_prev = 0
     
+    def __init__(self):
+        self.error_ema = EMA(0.05, 0)
+        self.error_abs_ema = EMA(0.05, 0)
+
     def predict(self, y_true):
         error = y_true - self.y_prev
         error_pred = self.error_abs_ema.predict(abs(error))
