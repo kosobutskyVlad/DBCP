@@ -2,6 +2,8 @@ import requests
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
+from xml_generation.xml_utils import indent
+
 show_error_popup = False
 error_popup_message = ""
 
@@ -52,19 +54,3 @@ def generate_plan(server_host, server_port,
     indent(products)
     tree = ET.ElementTree(products)
     tree.write(f"procurement_plan.xml", encoding="utf-8")
-
-
-def indent(elem, level=0):
-    i = "\n" + level*"    "
-    if len(elem):
-        if not elem.text or not elem.text.strip():
-            elem.text = i + "    "
-        if not elem.tail or not elem.tail.strip():
-            elem.tail = i
-        for elem in elem:
-            indent(elem, level+1)
-        if not elem.tail or not elem.tail.strip():
-            elem.tail = i
-    else:
-        if level and (not elem.tail or not elem.tail.strip()):
-            elem.tail = i
