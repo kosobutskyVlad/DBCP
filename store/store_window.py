@@ -46,8 +46,8 @@ def frame_store():
     _, server_port = imgui.input_text("Server port", server_port, 256)
     imgui.separator()
     imgui.text("Forecast connection settings")
-    _, forecast_host = imgui.input_text("Server host", forecast_host, 256)    
-    _, forecast_port = imgui.input_text("Server port", forecast_port, 256)
+    _, forecast_host = imgui.input_text("Forecast host", forecast_host, 256)    
+    _, forecast_port = imgui.input_text("Forecast port", forecast_port, 256)
     imgui.separator()
 
     imgui.end()
