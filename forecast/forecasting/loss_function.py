@@ -1,7 +1,7 @@
 def get_loss(y_true, y_pred, params):
     offset = y_pred - y_true
     if offset < params[0]:
-        return offset*params[1]
+        return (offset-params[0])*params[1]
     if offset < 0:
         return 0
 
