@@ -15,7 +15,7 @@ from endpoints import (
 server_process = None
 
 app = FastAPI()
-router = APIRouter()
+
 app.include_router(cities.router)
 app.include_router(storetypes.router)
 app.include_router(stores.router)
