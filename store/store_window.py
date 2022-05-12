@@ -52,6 +52,8 @@ def frame_store():
 
     imgui.end()
 
+    imgui.begin("Report generation")
+
     _, store_id = imgui.input_text("Store ID", store_id, 256)
 
     if imgui.button("Generate procurement plan"):
@@ -61,9 +63,11 @@ def frame_store():
             store_id
         )
 
+    imgui.end()
+
 
 def main():
-    start_window(300, 200, "Sales Forecasting: Server", frame_store)
+    start_window(300, 200, "Sales Forecasting: Store", frame_store)
 
 
 if __name__ == '__main__':
