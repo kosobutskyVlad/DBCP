@@ -72,7 +72,7 @@ def frame_forecast():
             
 
 def main():
-    start_window(1600, 900, "Sales Forecasting: Client", frame_forecast)
+    start_window(1600, 900, "Sales Forecasting: Forecast", frame_forecast)
 
 
 if __name__ == '__main__':
