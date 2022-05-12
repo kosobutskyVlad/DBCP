@@ -28,7 +28,7 @@ def render_frame(impl, window, render_function):
     window: GLFWwindow object
     frame_commands: function
     """
-    glfw.poll_events()
+    glfw.wait_events()
     impl.process_inputs()
     imgui.new_frame()
     
@@ -39,8 +39,7 @@ def render_frame(impl, window, render_function):
     imgui.render()
     impl.render(imgui.get_draw_data())
     glfw.swap_buffers(window)
-    glfw.wait_events()
-    
+
 
 def impl_glfw_init(width: int, height: int, window_name: str):
     """
