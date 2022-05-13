@@ -1,13 +1,14 @@
 import requests
 import xml.etree.ElementTree as ET
 from datetime import datetime
+import os
 
 from xml_generation.xml_utils import indent
 
 show_error_popup = False
 error_popup_message = ""
 
-def generate_plan(server_host, server_port,
+def generate_plan(path, server_host, server_port,
         forecast_host, forecast_port, store_id
     ):
 
@@ -45,7 +46,7 @@ def generate_plan(server_host, server_port,
             if response_get_prediction.status_code == 200:
                 product_prediction = response_get_prediction.json()
                 product = ET.SubElement(products, "product", id=product_id)
-                product.text = str(product_prediction[0])
+                product.text = str(product_prediction)
 
         except requests.exceptions.ConnectionError:
             show_error_popup = True
@@ -53,4 +54,6 @@ def generate_plan(server_host, server_port,
 
     indent(products)
     tree = ET.ElementTree(products)
-    tree.write(f"procurement_plan.xml", encoding="utf-8")
+    abs_path = path if os.path.isabs(path) else os.path.join(os.getcwd(), path)
+
+    tree.write(os.path.join(abs_path, "procurement_plan.xml"), encoding="utf-8")
