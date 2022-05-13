@@ -49,6 +49,19 @@ BEGIN
 END
 GO
 
+DROP TRIGGER IF EXISTS IfStockExists
+GO
+CREATE TRIGGER IfStockExists ON Stock
+INSTEAD OF INSERT
+AS
+BEGIN
+	INSERT INTO Stock(store_id, product_id, stock)
+	SELECT store_id, product_id, stock FROM inserted
+	WHERE CONCAT(product_id, store_id) NOT IN (SELECT CONCAT(product_id, store_id) FROM Stock)
+		AND product_id IN (SELECT product_id FROM Products) AND store_id IN (SELECT store_id FROM Stores)
+END
+GO
+
 DROP TRIGGER IF EXISTS IfParametersExists
 GO
 CREATE TRIGGER IfParametersExists ON LossFunctionParameters

@@ -27,24 +27,24 @@ def frame_server():
 
             imgui.end_menu()
         imgui.end_main_menu_bar()
-    
-    
+
+
     imgui.begin("Server Startup")
-    
+
     if imgui.button("Start server"):
         try:
             start_server()
             server_status = "running"
         except Exception:
             server_status = "could not start a server"
-        
-        
+
+
     if imgui.button("Stop server"):
         stop_server()
         server_status = "offline"
-    
+
     imgui.text(f"Server status: {server_status}")
-    
+
     imgui.end()
 
 

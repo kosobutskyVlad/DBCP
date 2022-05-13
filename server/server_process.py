@@ -9,19 +9,21 @@ from endpoints import (
     stores,
     products,
     parameters,
-    purchases
+    purchases,
+    stock
 )
 
 server_process = None
 
 app = FastAPI()
-router = APIRouter()
+
 app.include_router(cities.router)
 app.include_router(storetypes.router)
 app.include_router(stores.router)
 app.include_router(products.router)
 app.include_router(parameters.router)
 app.include_router(purchases.router)
+app.include_router(stock.router)
 
 def start_server():
     global server_process

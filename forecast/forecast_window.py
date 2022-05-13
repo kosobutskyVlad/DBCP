@@ -11,24 +11,16 @@ forecast_status = "offline"
 
 host = "127.0.0.1"
 port = "5000"
-prev_host = host
-prev_port = port
 
-is_server_running = False
 show_main_menu = False
 
-show_popup_server_not_available = False
-
-def frame_client():
+def frame_forecast():
     global forecast_status
 
     global host
     global port
 
-    global is_server_running
     global show_main_menu
-
-    global show_popup_server_not_available
 
     gl.glClearColor(0.1, 0.1, 0.1, 1)
     gl.glClear(gl.GL_COLOR_BUFFER_BIT)
@@ -48,7 +40,7 @@ def frame_client():
 
     imgui.begin("Network settings")
     imgui.text("Server connection settings")
-    _, host = imgui.input_text("Server host", host, 256)    
+    _, host = imgui.input_text("Server host", host, 256)
     _, port = imgui.input_text("Server port", port, 256)
     imgui.separator()
 
@@ -57,7 +49,14 @@ def frame_client():
             start_forecast()
             forecast_status = "running"
         except Exception:
-            forecast_status = "could not start a server"
+            forecast_status = "could not start a forecast"
+
+    if imgui.button("Stop forecast"):
+        stop_forecast()
+        forecast_status = "offline"
+    
+    imgui.text(f"Forecast status: {forecast_status}")
+
     imgui.separator()
 
     if imgui.button("Open main menu"):
@@ -73,7 +72,7 @@ def frame_client():
             
 
 def main():
-    start_window(1600, 900, "Sales Forecasting: Client", frame_client)
+    start_window(1600, 900, "Sales Forecasting: Forecast", frame_forecast)
 
 
 if __name__ == '__main__':

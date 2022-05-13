@@ -210,13 +210,11 @@ def update_purchase(purchase_id: int, purchase: Purchase):
     cursor = conn.cursor()
     cursor.execute(f"UPDATE Purchases \
                    SET {', '.join(update)} \
-                   WHERE store_id = '{purchase.store_id}' \
-                   AND product_id = '{purchase.product_id}'")
+                   WHERE purchase_id = '{purchase_id}'")
     conn.commit()
 
     cursor.execute(f"SELECT * FROM Purchases \
-                   WHERE store_id = '{purchase.store_id}' \
-                   AND product_id = '{purchase.product_id}'")
+                   WHERE purchase_id = '{purchase_id}'")
     data = []
     for row in cursor:
         data.append(list(row))
