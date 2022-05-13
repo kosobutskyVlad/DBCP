@@ -45,7 +45,7 @@ def generate_plan(path, server_host, server_port,
 
             if response_get_prediction.status_code == 200:
                 product_prediction = response_get_prediction.json()
-                product = ET.SubElement(products, "product", id=product_id)
+                product = ET.SubElement(products, "product", id=product_id[0])
                 product.text = str(product_prediction)
 
         except requests.exceptions.ConnectionError:
