@@ -5,12 +5,15 @@ import imgui
 
 from render_utils import start_window
 from xml_generation.procurement_plan import generate_plan
+from xml_generation.multimarket_list import generate_yml
 
 server_host = "127.0.0.1"
 server_port = "5000"
 
 forecast_host = "127.0.0.1"
 forecast_port = "5001"
+
+path = ""
 
 store_id = ""
 
@@ -21,6 +24,8 @@ def frame_store():
 
     global forecast_host
     global forecast_port
+
+    global path
 
     global store_id
 
@@ -54,13 +59,21 @@ def frame_store():
 
     imgui.begin("Report generation")
 
+    imgui.text("Enter path:")
+    imgui.same_line()
+    _, path = imgui.input_text("", path, 256)
+
     _, store_id = imgui.input_text("Store ID", store_id, 256)
 
     if imgui.button("Generate procurement plan"):
         generate_plan(
-            server_host, server_port,
-            forecast_host, forecast_port,
-            store_id
+            path, server_host, server_port,
+            forecast_host, forecast_port, store_id
+        )
+
+    if imgui.button("Generate YML catalogue"):
+        generate_yml(
+            path, server_host, server_port, store_id
         )
 
     imgui.end()
