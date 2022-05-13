@@ -60,7 +60,7 @@ def add_offer(offers, stock, product):
     )
 
     price_elem = ET.SubElement(offer, "price")
-    price_elem.text = str(product[3])
+    price_elem.text = str(round(product[3], 2))
     count = ET.SubElement(offer, "count")
     count.text = str(stock[3])
     currencyId = ET.SubElement(offer, "currencyId")
