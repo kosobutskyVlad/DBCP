@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import pyodbc
 from pydantic import BaseModel
@@ -18,15 +18,23 @@ def select_ids(table_name: str, field_name: str) -> List:
                 data.append(row[0])
     return data
 
-def select_eq(table_name: str, field_name: str,
-              field_val) -> List[List]:
+def select_eq(table_name: str, field_name: str, field_val,
+              fields: Optional[List[str]] = None,
+              distinct: bool = False) -> List[List]:
     """
     Returns records where field_name equals field_val
     """
+
+    fields_str = "*"
+    if fields is not None:
+        fields_str = ", ".join(fields)
+
+    distinct_str = "DISTINCT" if distinct else ""
+
     with pyodbc.connect(CONNSTRING) as conn:
         with conn.cursor() as cursor:
             cursor.execute(
-                f"SELECT * FROM {table_name} "
+                f"SELECT {distinct_str} {fields_str} FROM {table_name} "
                 f"WHERE {field_name} = {add_quotes(field_val)}"
             )
             data = []
