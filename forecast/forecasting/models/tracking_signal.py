@@ -1,4 +1,5 @@
 from itertools import repeat
+from typing import List
 
 from numpy import arange
 
@@ -8,13 +9,13 @@ from ..loss_function import get_loss
 class TrackingSignal:
     """Tracking signal model"""
     
-    def __init__(self):
+    def __init__(self) -> None:
         self.alpha = 0.01
         self.y_prev = 0
         self.error_ema = EMA(0.05, 0)
         self.error_abs_ema = EMA(0.05, 0)
         
-    def predict(self, y_true):
+    def predict(self, y_true: float) -> float:
         error = y_true - self.y_prev
         error_pred = self.error_abs_ema.predict(abs(error))
         if error_pred == 0:
@@ -23,7 +24,7 @@ class TrackingSignal:
         self.y_prev = self.alpha*y_true + (1-self.alpha)*self.y_prev
         return self.y_prev
     
-    def fit(self, y, loss_params):
+    def fit(self, y: float, loss_params: List[float]) -> None:
         best_loss = float('inf')
 
         for g1 in arange(0.05, 0.101, 0.005):

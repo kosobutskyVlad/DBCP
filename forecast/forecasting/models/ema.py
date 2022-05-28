@@ -1,4 +1,5 @@
 from itertools import repeat
+from typing import List
 
 from numpy import arange
 
@@ -7,17 +8,15 @@ from ..loss_function import get_loss
 class EMA:
     """Exponential moving average"""
 
-    def __init__(self, alpha=0.01, y_prev=0):
-        if alpha is not None:
-            self.alpha = alpha
-        if y_prev is not None:
-            self.y_prev = y_prev
+    def __init__(self, alpha: float = 0.01, y_prev: float = 0) -> None:
+        self.alpha = alpha
+        self.y_prev = y_prev
 
-    def predict(self, y_true):
+    def predict(self, y_true: float) -> float:
         self.y_prev = self.alpha*y_true + (1-self.alpha)*self.y_prev
         return self.y_prev
 
-    def fit(self, y, loss_params):
+    def fit(self, y: float, loss_params: List[float]) -> None:
         best_loss = float('inf')
         best_alpha = 0.01
     
