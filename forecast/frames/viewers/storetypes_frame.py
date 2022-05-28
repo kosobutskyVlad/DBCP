@@ -43,13 +43,13 @@ def storetypes_frame(host: str, port: int):
                 f"http://{host}:{port}/storetypes/get-storetypes")
 
             if response_get_storetypes.status_code == 200:
-                storetypes_list = response_get_storetypes.json()["storetypes"]
+                storetypes_list = response_get_storetypes.json()
 
-                selectable_storetypes = {storetype[0]: False for storetype
+                selectable_storetypes = {storetype: False for storetype
                                         in storetypes_list}
-                storetypes_refresh = {storetype[0]: True for storetype
+                storetypes_refresh = {storetype: True for storetype
                                     in storetypes_list}
-                storetypes_changed = {storetype[0]: False for storetype
+                storetypes_changed = {storetype: False for storetype
                                     in storetypes_list}
                 show_selectable_storetypes = False
 
@@ -69,9 +69,9 @@ def storetypes_frame(host: str, port: int):
         imgui.begin_child("storetypes_list", 1200, 200, border=True)
         imgui.columns(count=15, identifier=None, border=False)
         for storetype in storetypes_list:
-            label = storetype[0]
-            _, selectable_storetypes[storetype[0]] = imgui.selectable(
-                label, selectable_storetypes[storetype[0]])
+            label = storetype
+            _, selectable_storetypes[storetype] = imgui.selectable(
+                label, selectable_storetypes[storetype])
             imgui.next_column()
         imgui.columns(1)
         imgui.end_child()
@@ -83,9 +83,9 @@ def storetypes_frame(host: str, port: int):
                 try:
                     get_storetype_response = requests.get(
                         f"http://{host}:{port}/storetypes/get-storetype/{storetype}")
-                    info = get_storetype_response.json()["Data"][0]
+                    info = get_storetype_response.json()[0]
                     storetypes_info[storetype] = {
-                        "storetype_description": info[1][:100]}
+                        "storetype_description": info[1]}
                 except requests.exceptions.ConnectionError:
                     show_error_popup = True
                     error_popup_message = "Server unavailable.\nPlease retry later."
