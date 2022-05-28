@@ -1,10 +1,8 @@
 from typing import List
 
-import pyodbc
 from pydantic import BaseModel, constr, confloat
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
-from sql_utils import CONNSTRING
 from sql_requests import select_ids, select_eq, insert, update, delete
 
 TABLE_NAME = "Products"
