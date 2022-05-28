@@ -41,7 +41,6 @@ class AdaptiveComposition:
             if isinstance(model, Autoregression):
                 if self.aggr_window is None:
                     raise ValueError("Specify aggr_window if using Autoregression")
-                print(model.weights)
                 model.fit(X, y, loss_params)
             else:
                 model.fit(y, loss_params)
