@@ -7,7 +7,6 @@ from fastapi import APIRouter, HTTPException
 from sql_utils import exists
 from sql_requests import select_ids, select_eq, insert, update, delete
 
-
 TABLE_NAME = "Stores"
 ID_NAME = "store_id"
 

@@ -48,11 +48,11 @@ def products_frame(host: str, port: int):
                 f"http://{host}:{port}/products/get-products")
             
             if response_get_products.status_code == 200:
-                products_list = response_get_products.json()["products"]
+                products_list = response_get_products.json()
 
-                selectable_products = {product[0]: False for product in products_list}
-                products_refresh = {product[0]: True for product in products_list}
-                products_changed = {product[0]: False for product in products_list}
+                selectable_products = {product: False for product in products_list}
+                products_refresh = {product: True for product in products_list}
+                products_changed = {product: False for product in products_list}
                 show_selectable_products = False
         except requests.exceptions.ConnectionError:
             show_error_popup = True
@@ -70,9 +70,9 @@ def products_frame(host: str, port: int):
         imgui.begin_child("products_list", 1200, 200, border=True)
         imgui.columns(count=15, identifier=None, border=False)
         for product in products_list:
-            label = product[0]
-            _, selectable_products[product[0]] = imgui.selectable(
-                label=label, selected=selectable_products[product[0]])
+            label = product
+            _, selectable_products[product] = imgui.selectable(
+                label=label, selected=selectable_products[product])
             imgui.next_column()
         imgui.columns(1)
         imgui.end_child()
@@ -84,10 +84,10 @@ def products_frame(host: str, port: int):
                 try:
                     get_product_response = requests.get(
                         f"http://{host}:{port}/products/get-product/{product}")
-                    info = get_product_response.json()["Data"][0]
+                    info = get_product_response.json()[0]
                     products_info[product] = {
-                        "product_name": info[1][:50],
-                        "hierarchy_code": info[2][:11],
+                        "product_name": info[1],
+                        "hierarchy_code": info[2],
                         "price": info[3],
                         "product_length": info[4],
                         "product_depth": info[5],

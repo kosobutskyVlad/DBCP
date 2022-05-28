@@ -135,7 +135,7 @@ def stores_frame(host: str, port: int):
                         "storetype_id": stores_info[store]["storetype_id"],
                         "city_id": stores_info[store]["city_id"],
                         "store_size": stores_info[store]["store_size"]})
-                    if response_update_store.status_code == 422:
+                    if response_update_store.status_code != 200:
                         show_error_popup = True
                         error_popup_message = response_update_store.json()["detail"]
                 except requests.exceptions.ConnectionError:
