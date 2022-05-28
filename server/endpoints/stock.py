@@ -1,13 +1,19 @@
-from typing import Optional
+from typing import List
 
 import pyodbc
-from pydantic import BaseModel
+from pydantic import BaseModel, constr, conint
 from fastapi import APIRouter, HTTPException
 
+from sql_utils import exists
+from sql_requests import select_ids, select_eq, insert, update, delete
+
+TABLE_NAME = "Stock"
+ID_NAME = "stock_id"
+
 class Stock(BaseModel):
-    store_id: str
-    product_id: str
-    stock: int = 0
+    store_id: constr(curtail_length=5)
+    product_id: constr(curtail_length=5)
+    stock: conint(ge=0) = 0
 
 router = APIRouter(
     prefix="/stock",
@@ -16,185 +22,46 @@ router = APIRouter(
 
 
 @router.get("/get-stock")
-def get_stock_by_store(store_id: str):
-
-    conn = pyodbc.connect(
-        "Driver={SQL Server Native Client 11.0};"
-        "Server=DESKTOP-P8N0IJI;"
-        "Database=retail;"
-        "Trusted_Connection=yes;")
-
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT * FROM Stock WHERE store_id = '{store_id}'")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-    conn.close()
-
-    if data:
-        return {"stock": data}
-
-    raise HTTPException(status_code=404,
-                        detail=f"{store_id} stock not found.")
+def get_stock_by_store(store_id: str) -> List[List]:
+    return select_eq(TABLE_NAME, "store_id", store_id)
 
 @router.get("/get-stock/{stock_id}")
-def get_stock_by_id(stock_id: int):
-
-    conn = pyodbc.connect(
-        "Driver={SQL Server Native Client 11.0};"
-        "Server=DESKTOP-P8N0IJI;"
-        "Database=retail;"
-        "Trusted_Connection=yes;")
-
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT * FROM Stock \
-                   WHERE stock_id = {stock_id}")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-    conn.close()
-
-    if data:
-        return {"Data": data}
-
-    raise HTTPException(status_code=404,
-                        detail=f"{stock_id} not found.")
+def get_stock_by_id(stock_id: int) -> List[List]:
+    return select_eq(TABLE_NAME, ID_NAME, stock_id)
 
 @router.post("/add-stock")
-def add_stock(stock: Stock):
+def add_stock(stock: Stock) -> dict:
+    if not exists("Stores", "store_id", stock.store_id):
+        raise HTTPException(
+            status_code=422,
+            detail=f"{stock.store_id} does not exist."
+        )
 
-    conn = pyodbc.connect(
-        "Driver={SQL Server Native Client 11.0};"
-        "Server=DESKTOP-P8N0IJI;"
-        "Database=retail;"
-        "Trusted_Connection=yes;")
+    if not exists("Products", "product_id", stock.product_id):
+        raise HTTPException(
+            status_code=422,
+            detail=f"{stock.product_id} does not exist."
+        )
 
-    cursor = conn.cursor()
-
-    cursor.execute(f"SELECT store_id FROM Stores \
-                   WHERE store_id = '{stock.store_id}'")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-    
-    if not data:
-        conn.close()
-        raise HTTPException(status_code=422,
-                            detail=f"{stock.store_id} \
-                            does not exist")
-
-    cursor.execute(f"SELECT product_id FROM Products \
-                   WHERE product_id = '{stock.product_id}'")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-    
-    if not data:
-        conn.close()
-        raise HTTPException(status_code=422,
-                            detail=f"{stock.product_id} does not exist.")
-
-    cursor.execute(f"INSERT INTO Purchases(store_id, product_id, \
-                   stock) VALUES('{stock.store_id}', \
-                   '{stock.product_id}', \
-                   '{stock.stock}')")
-    conn.commit()
-    conn.close()
-    return {"store_id": stock.store_id,
-            "product_id": stock.product_id,
-            "stock": stock.stock}
+    return insert(TABLE_NAME, ID_NAME, stock)
 
 @router.put("/update-stock")
-def update_stock(stock_id: int, stock: Stock):
+def update_stock(stock_id: int, stock: Stock) -> dict:
 
-    conn = pyodbc.connect(
-        "Driver={SQL Server Native Client 11.0};"
-        "Server=DESKTOP-P8N0IJI;"
-        "Database=retail;"
-        "Trusted_Connection=yes;")
+    if not exists("Stores", "store_id", stock.store_id):
+        raise HTTPException(
+            status_code=422,
+            detail=f"{stock.store_id} does not exist."
+        )
 
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT stock_id FROM Stock \
-                   WHERE stock_id = {stock_id}")
-    data = []
-    for row in cursor:
-        data.append(list(row))
+    if not exists("Products", "product_id", stock.product_id):
+        raise HTTPException(
+            status_code=422,
+            detail=f"{stock.product_id} does not exist."
+        )
 
-    if not data:
-        conn.close()
-        raise HTTPException(status_code=404,
-                            detail=f"{stock_id} not found.")
-    cursor.execute(f"SELECT store_id FROM Stores \
-                   WHERE store_id = '{stock.store_id}'")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-    
-    if not data:
-        conn.close()
-        raise HTTPException(status_code=422,
-                            detail=f"{stock.store_id} \
-                            does not exist")
-
-    cursor.execute(f"SELECT product_id FROM Products \
-                   WHERE product_id = '{stock.product_id}'")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-    
-    if not data:
-        conn.close()
-        raise HTTPException(status_code=422,
-                            detail=f"{stock.product_id} does not exist.")
-
-    update = []
-    if stock.store_id is not None:
-        update.append(f"store_id = '{stock.store_id}'")
-    if stock.product_id is not None:
-        update.append(f"product_id = '{stock.product_id}'")
-    if stock.stock is not None:
-        update.append(f"stock = '{stock.stock}'")
-
-    if not update:
-        conn.close()
-        raise HTTPException(status_code=422,
-                            detail=f"Fill at least one field.")
-
-    cursor = conn.cursor()
-    cursor.execute(f"UPDATE Stock SET {', '.join(update)} \
-                   WHERE stock_id = '{stock_id}'")
-    conn.commit()
-
-    cursor.execute(f"SELECT * FROM Stock WHERE stock_id = '{stock_id}'")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-    conn.close()
-
-    return {"Data": data}
+    return update(TABLE_NAME, ID_NAME, stock, stock_id)
 
 @router.delete("/delete-stock/{stock_id}")
-def delete_stock(stock_id: int):
-
-    conn = pyodbc.connect(
-        "Driver={SQL Server Native Client 11.0};"
-        "Server=DESKTOP-P8N0IJI;"
-        "Database=retail;"
-        "Trusted_Connection=yes;")
-
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT stock_id FROM Stock \
-                   WHERE stock_id = '{stock_id}'")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-
-    if not data:
-        conn.close()
-        raise HTTPException(status_code=404,
-                            detail=f"{stock_id} not found.")
-
-    cursor.execute(f"DELETE FROM Stock WHERE stock_id = '{stock_id}'")
-    conn.commit()
-    conn.close()
-    return {"stock_id": stock_id, "is_deleted": True}
+def delete_stock(stock_id: int) -> dict:
+    return delete(TABLE_NAME, ID_NAME, stock_id)

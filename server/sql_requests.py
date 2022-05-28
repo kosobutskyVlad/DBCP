@@ -65,8 +65,11 @@ def insert(table_name: str, id_name: str, model: BaseModel) -> dict:
 
     return dict(model)
 
-def update(table_name: str, id_name: str, model: BaseModel) -> dict:
-    item_id = getattr(model, id_name)
+def update(table_name: str, id_name: str, model: BaseModel,
+           item_id: Optional[int] = None) -> dict:
+    """item_id is for IDENTITY primary keys"""
+    if item_id is None:
+        item_id = getattr(model, id_name)
     if not exists(table_name, id_name, item_id):
         raise HTTPException(
             status_code=404,
