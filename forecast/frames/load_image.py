@@ -1,3 +1,5 @@
+import os
+
 from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
@@ -26,9 +28,10 @@ def create_image(purchases_df, prediction_results, aggr_window):
 
 
 def get_textureID():
-    image = Image.open("prediction.jpg") 
-    image = image.convert('RGB')   
+    image = Image.open("prediction.jpg")
+    image = image.convert('RGB')
     img_data = np.array(list(image.getdata()), np.uint8)
+    os.remove("prediction.jpg")
 
     textureID = gl.glGenTextures(1)
     gl.glPixelStorei(gl.GL_UNPACK_ALIGNMENT, 1)
