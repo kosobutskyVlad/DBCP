@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import List
 
 from pydantic import BaseModel, constr
 from fastapi import APIRouter
@@ -10,7 +10,7 @@ ID_NAME = "storetype_id"
 
 class StoreType(BaseModel):
     storetype_id: constr(curtail_length=4)
-    storetype_description: Optional[constr(curtail_length=100)] = ""
+    storetype_description: constr(curtail_length=100) = ""
 
 router = APIRouter(
     prefix="/storetypes",

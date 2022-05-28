@@ -45,11 +45,11 @@ def stores_frame(host: str, port: int):
                 f"http://{host}:{port}/stores/get-stores")
             
             if response_get_stores.status_code == 200:
-                stores_list = response_get_stores.json()["stores"]
+                stores_list = response_get_stores.json()
 
-                selectable_stores = {store[0]: False for store in stores_list}
-                stores_refresh = {store[0]: True for store in stores_list}
-                stores_changed = {store[0]: False for store in stores_list}
+                selectable_stores = {store: False for store in stores_list}
+                stores_refresh = {store: True for store in stores_list}
+                stores_changed = {store: False for store in stores_list}
                 show_selectable_stores = False
 
         except requests.exceptions.ConnectionError:
@@ -68,9 +68,9 @@ def stores_frame(host: str, port: int):
         imgui.begin_child("stores_list", 1200, 200, border=True)
         imgui.columns(count=15, identifier=None, border=False)
         for store in stores_list:
-            label = store[0]
-            _, selectable_stores[store[0]] = imgui.selectable(
-                label=label, selected=selectable_stores[store[0]])
+            label = store
+            _, selectable_stores[store] = imgui.selectable(
+                label=label, selected=selectable_stores[store])
             imgui.next_column()
         imgui.columns(1)
         imgui.end_child()
@@ -82,9 +82,9 @@ def stores_frame(host: str, port: int):
                 try:
                     get_store_response = requests.get(
                         f"http://{host}:{port}/stores/get-store/{store}")
-                    info = get_store_response.json()["Data"][0]
-                    stores_info[store] = {"storetype_id": info[1][:4],
-                                        "city_id": info[2][:4],
+                    info = get_store_response.json()[0]
+                    stores_info[store] = {"storetype_id": info[1],
+                                        "city_id": info[2],
                                         "store_size": info[3]}
                 except requests.exceptions.ConnectionError:
                     show_error_popup = True

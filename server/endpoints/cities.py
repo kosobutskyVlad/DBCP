@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import List
 
 from pydantic import BaseModel, constr
 from fastapi import APIRouter
@@ -10,9 +10,9 @@ ID_NAME = "city_id"
 
 class City(BaseModel):
     city_id: constr(curtail_length=4)
-    city_name: Optional[constr(curtail_length=50)] = ""
-    city_size: Optional[constr(curtail_length=10)] = ""
-    country: Optional[constr(curtail_length=50)] = ""
+    city_name: constr(curtail_length=50) = ""
+    city_size: constr(curtail_length=10) = ""
+    country: constr(curtail_length=50) = ""
 
 router = APIRouter(
     prefix="/cities",

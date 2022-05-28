@@ -11,7 +11,7 @@ def add_quotes(field_val):
     """
     if type(field_val) == str:
         return f"'{field_val}'"
-    return field_val
+    return str(field_val)
     
 
 def exists(table_name: str, field_name: str, field_val) -> bool:
