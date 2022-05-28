@@ -1,5 +1,4 @@
 from itertools import repeat
-from types import NoneType
 from typing import List
 
 from numpy import arange

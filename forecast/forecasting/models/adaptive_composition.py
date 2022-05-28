@@ -1,7 +1,7 @@
 import numpy as np
 from typing import List
 
-from base import Model
+from forecasting.models.base import Model
 from forecasting.models.ema import EMA
 from forecasting.models.autoregression import Autoregression
 
