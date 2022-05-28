@@ -2,11 +2,10 @@ from itertools import repeat
 
 import numpy as np
 
-from forecasting.models.base import Model
 from ..loss_function import get_loss_derivative
 
-class Autoregression(Model):
-    weights = None
+class Autoregression:
+    """Autoregression model"""
 
     def __init__(self, feature_count):
         self.weights = np.zeros((feature_count,))

@@ -1,11 +1,9 @@
-from abc import ABC, abstractmethod
+from typing import Protocol
 
-class Model(ABC):
-    
-    @abstractmethod
-    def predict(self):
+class Model(Protocol):
+
+    def predict(self) -> int:
         pass
-    
-    @abstractmethod
-    def fit(self):
+
+    def fit(self) -> None:
         pass

@@ -1,13 +1,10 @@
 import numpy as np
 
-from forecasting.models.base import Model
 from forecasting.models.ema import EMA
 from forecasting.models.autoregression import Autoregression
 
-class AdaptiveComposition(Model):
-    models = None
-    errors_ema = None
-    predictions = None
+class AdaptiveComposition:
+    """Weighted composition"""
     
     def __init__(self, models, aggr_window=None):
         self.models = []

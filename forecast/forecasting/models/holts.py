@@ -1,17 +1,13 @@
 from itertools import repeat
 
-import numpy as np
+from numpy import arange
 
-from forecasting.models.base import Model
 from ..loss_function import get_loss
 
-class Holts(Model):
-    alpha1 = 0.01
-    alpha2 = 0.01
-    a = 0
-    b = 0
+class Holts:
+    """Holts linear trend model"""
 
-    def __init__(self, alpha1=None, alpha2=None, a=None, b=None):
+    def __init__(self, alpha1=0.01, alpha2=0.01, a=0, b=0):
         if alpha1 is not None:
             self.alpha1 = alpha1
         if alpha2 is not None:
@@ -28,11 +24,11 @@ class Holts(Model):
         return self.a + self.b*dist
 
     def fit(self, y, loss_params):
-        best_loss = np.inf
+        best_loss = float('inf')
         best_alpha = (0.01, 0.01)
 
-        for alpha1 in np.arange(0.05, 1, 0.05):
-            for alpha2 in np.arange(0.05, 1, 0.05):
+        for alpha1 in arange(0.05, 1, 0.05):
+            for alpha2 in arange(0.05, 1, 0.05):
                 y_pred = []
                 self.alpha1 = alpha1
                 self.alpha2 = alpha2

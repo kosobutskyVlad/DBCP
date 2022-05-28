@@ -1,15 +1,13 @@
 from itertools import repeat
 
-import numpy as np
+from numpy import arange
 
-from forecasting.models.base import Model
 from ..loss_function import get_loss
 
-class EMA(Model):
-    alpha = 0.01
-    y_prev = 0
+class EMA:
+    """Exponential moving average"""
 
-    def __init__(self, alpha=None, y_prev=None):
+    def __init__(self, alpha=0.01, y_prev=0):
         if alpha is not None:
             self.alpha = alpha
         if y_prev is not None:
@@ -20,10 +18,10 @@ class EMA(Model):
         return self.y_prev
 
     def fit(self, y, loss_params):
-        best_loss = np.inf
+        best_loss = float('inf')
         best_alpha = 0.01
     
-        for alpha in np.arange(0.05, 1, 0.05):
+        for alpha in arange(0.05, 1, 0.05):
             y_pred = []
             self.alpha = alpha
             self.y_prev = y[0]
