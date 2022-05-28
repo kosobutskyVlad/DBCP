@@ -45,14 +45,14 @@ def cities_frame(host: str, port: int):
                 f"http://{host}:{port}/cities/get-cities")
 
             if response_get_cities.status_code == 200:
-                cities_list = response_get_cities.json()["cities"]
+                cities_list = response_get_cities.json()
 
                 selectable_cities = {
-                    city[0]: False for city in cities_list}
+                    city: False for city in cities_list}
                 cities_refresh = {
-                    city[0]: True for city in cities_list}
+                    city: True for city in cities_list}
                 cities_changed = {
-                    city[0]: False for city in cities_list}
+                    city: False for city in cities_list}
                 show_selectable_cities = False
 
         except requests.exceptions.ConnectionError:
@@ -71,9 +71,9 @@ def cities_frame(host: str, port: int):
         imgui.begin_child("cities_list", 1200, 200, border=True)
         imgui.columns(count=15, identifier=None, border=False)
         for city in cities_list:
-            label = city[0]
-            _, selectable_cities[city[0]] = imgui.selectable(
-                label, selectable_cities[city[0]])
+            label = city
+            _, selectable_cities[city] = imgui.selectable(
+                label, selectable_cities[city])
             imgui.next_column()
         imgui.columns(1)
         imgui.end_child()

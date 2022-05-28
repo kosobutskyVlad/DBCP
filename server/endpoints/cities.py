@@ -4,6 +4,9 @@ import pyodbc
 from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException
 
+from sql_utils import CONNSTRING
+from sql_requests import delete, select_ids
+
 class City(BaseModel):
     city_id: str
     city_name: Optional[str] = None
@@ -17,30 +20,12 @@ router = APIRouter(
 
 @router.get("/get-cities")
 def get_cities():
-    
-    conn = pyodbc.connect(
-        "Driver={SQL Server Native Client 11.0};"
-        "Server=DESKTOP-P8N0IJI;"
-        "Database=retail;"
-        "Trusted_Connection=yes;")
-
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT city_id FROM Cities")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-    conn.close()
-
-    return {"cities": data}
+    return select_ids("Cities", "city_id")
 
 @router.get("/get-city/{city_id}")
 def get_city(city_id: str):
 
-    conn = pyodbc.connect(
-        "Driver={SQL Server Native Client 11.0};"
-        "Server=DESKTOP-P8N0IJI;"
-        "Database=retail;"
-        "Trusted_Connection=yes;")
+    conn = pyodbc.connect(CONNSTRING)
 
     cursor = conn.cursor()
     cursor.execute(f"SELECT * FROM Cities WHERE city_id = '{city_id}'")
@@ -57,11 +42,7 @@ def get_city(city_id: str):
 @router.post("/add-city")
 def add_city(city: City):
 
-    conn = pyodbc.connect(
-        "Driver={SQL Server Native Client 11.0};"
-        "Server=DESKTOP-P8N0IJI;"
-        "Database=retail;"
-        "Trusted_Connection=yes;")
+    conn = pyodbc.connect(CONNSTRING)
 
     cursor = conn.cursor()
     cursor.execute(f"SELECT city_id FROM Cities \
@@ -88,11 +69,7 @@ def add_city(city: City):
 @router.put("/update-city")
 def update_city(city: City):
 
-    conn = pyodbc.connect(
-        "Driver={SQL Server Native Client 11.0};"
-        "Server=DESKTOP-P8N0IJI;"
-        "Database=retail;"
-        "Trusted_Connection=yes;")
+    conn = pyodbc.connect(CONNSTRING)
 
     cursor = conn.cursor()
     cursor.execute(f"SELECT city_id FROM Cities \
@@ -135,11 +112,7 @@ def update_city(city: City):
 @router.delete("/delete-city/{city_id}")
 def delete_city(city_id: str):
 
-    conn = pyodbc.connect(
-        "Driver={SQL Server Native Client 11.0};"
-        "Server=DESKTOP-P8N0IJI;"
-        "Database=retail;"
-        "Trusted_Connection=yes;")
+    conn = pyodbc.connect(CONNSTRING)
 
     cursor = conn.cursor()
     cursor.execute(f"SELECT city_id FROM Cities \
