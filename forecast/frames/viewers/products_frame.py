@@ -50,9 +50,9 @@ def products_frame(host: str, port: int):
             if response_get_products.status_code == 200:
                 products_list = response_get_products.json()
 
-                selectable_products = {product: False for product in products_list}
-                products_refresh = {product: True for product in products_list}
-                products_changed = {product: False for product in products_list}
+                selectable_products = {product[0]: False for product in products_list}
+                products_refresh = {product[0]: True for product in products_list}
+                products_changed = {product[0]: False for product in products_list}
                 show_selectable_products = False
         except requests.exceptions.ConnectionError:
             show_error_popup = True
@@ -70,9 +70,9 @@ def products_frame(host: str, port: int):
         imgui.begin_child("products_list", 1200, 200, border=True)
         imgui.columns(count=15, identifier=None, border=False)
         for product in products_list:
-            label = product
-            _, selectable_products[product] = imgui.selectable(
-                label=label, selected=selectable_products[product])
+            label = product[0]
+            _, selectable_products[product[0]] = imgui.selectable(
+                label=label, selected=selectable_products[product[0]])
             imgui.next_column()
         imgui.columns(1)
         imgui.end_child()
@@ -221,6 +221,7 @@ def products_frame(host: str, port: int):
             if response_add_product.status_code == 422:
                 show_error_popup = True
                 error_popup_message = response_add_product.json()["detail"]
+                print(error_popup_message)
         except requests.exceptions.ConnectionError:
             show_error_popup = True
             error_popup_message = "Server unavailable.\nPlease retry later."

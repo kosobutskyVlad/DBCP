@@ -66,7 +66,7 @@ def parameters_frame(host: str, port: int):
                 "product_id": input_get_by_product_id})
             
             if response_get_parameters.status_code == 200:
-                parameters_list = response_get_parameters.json()["parameters"]
+                parameters_list = response_get_parameters.json()
 
                 selectable_parameters = {parameters[0]: False for parameters in parameters_list}
                 parameters_refresh = {parameters[0]: True for parameters in parameters_list}
@@ -105,13 +105,11 @@ def parameters_frame(host: str, port: int):
                 parameters_refresh[parameters] = False
                 try:
                     get_parameters_response = requests.get(
-                        f"http://{host}:{port}/parameters/get-parameters/",
-                        params={"store_id": input_get_by_store_id or parameters_list[i][1],
-                        "product_id": input_get_by_product_id or parameters_list[i][2]})
-                    info = get_parameters_response.json()["parameters"][0]
+                        f"http://{host}:{port}/parameters/get-parameters/{parameters_list[i][0]}")
+                    info = get_parameters_response.json()[0]
                     parameters_info[parameters] = {
-                        "store_id": info[1][:5],
-                        "product_id": info[2][:5],
+                        "store_id": info[1],
+                        "product_id": info[2],
                         "loyalty_charge_x": info[3],
                         "loyalty_charge_coef": info[4],
                         "storage_cost_coef": info[5],
@@ -209,7 +207,7 @@ def parameters_frame(host: str, port: int):
                         "bank_rate_coef": parameters_info[parameters]["bank_rate_coef"],
                         "product_cost_x": parameters_info[parameters]["product_cost_x"],
                         "product_cost_coef": parameters_info[parameters]["product_cost_coef"]})
-                    if response_update_parameters.status_code == 422:
+                    if response_update_parameters.status_code != 200:
                         show_error_popup = True
                         error_popup_message = response_update_parameters.json()["detail"]
                 except requests.exceptions.ConnectionError:
@@ -223,9 +221,7 @@ def parameters_frame(host: str, port: int):
             if selectable_parameters[parameters]:
                 try:
                     response_delete_parameters = requests.delete(
-                        f"http://{host}:{port}/parameters/delete-parameters",
-                        params={"store_id": input_get_by_store_id,
-                        "product_id": input_get_by_product_id})
+                        f"http://{host}:{port}/parameters/delete-parameters/{parameters}")
                 except requests.exceptions.ConnectionError:
                     show_error_popup = True
                     error_popup_message = "Server unavailable.\nPlease retry later."

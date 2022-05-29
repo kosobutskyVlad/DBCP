@@ -3,10 +3,11 @@ from typing import List
 from pydantic import BaseModel, constr
 from fastapi import APIRouter
 
-from sql_requests import select_ids, select_eq, insert, update, delete
+from sql_utils import get_where_clause
+from sql_requests import select_eq, insert, update, delete
 
 TABLE_NAME = "Cities"
-ID_NAME = "city_id"
+ID_FIELD = "city_id"
 
 class City(BaseModel):
     city_id: constr(curtail_length=4)
@@ -16,25 +17,26 @@ class City(BaseModel):
 
 router = APIRouter(
     prefix="/cities",
-    tags=[TABLE_NAME],
+    tags=["Cities"],
     responses={404: {"description": "Not found"}})
 
 @router.get("/get-cities")
 def get_cities() -> List:
-    return select_ids(TABLE_NAME, ID_NAME)
+    return select_eq(TABLE_NAME, [ID_FIELD])
 
 @router.get("/get-city/{city_id}")
 def get_city(city_id: str) -> List[List]:
-    return select_eq(TABLE_NAME, ID_NAME, city_id)
+    where_clause = get_where_clause([ID_FIELD], [city_id])
+    return select_eq(TABLE_NAME, where_clause=where_clause)
 
 @router.post("/add-city")
 def add_city(city: City) -> dict:
-    return insert(TABLE_NAME, ID_NAME, city)
+    return insert(TABLE_NAME, city, ID_FIELD)
 
 @router.put("/update-city")
 def update_city(city: City) -> dict:
-    return update(TABLE_NAME, ID_NAME, city)
+    return update(TABLE_NAME, ID_FIELD, city)
 
 @router.delete("/delete-city/{city_id}")
 def delete_city(city_id: str) -> dict:
-    return delete(TABLE_NAME, ID_NAME, city_id)
+    return delete(TABLE_NAME, ID_FIELD, city_id)
