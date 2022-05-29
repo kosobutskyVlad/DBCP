@@ -1,12 +1,17 @@
-from typing import Optional
+from typing import List
 
-import pyodbc
-from pydantic import BaseModel
-from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, constr
+from fastapi import APIRouter
+
+from sql_utils import get_where_clause
+from sql_requests import select_eq, insert, update, delete
+
+TABLE_NAME = "Storetypes"
+ID_FIELD = "storetype_id"
 
 class StoreType(BaseModel):
-    storetype_id: str
-    storetype_description: Optional[str] = None
+    storetype_id: constr(curtail_length=4)
+    storetype_description: constr(curtail_length=100) = ""
 
 router = APIRouter(
     prefix="/storetypes",
@@ -14,141 +19,22 @@ router = APIRouter(
     responses={404: {"description": "Not found"}})
 
 @router.get("/get-storetypes")
-def get_storetypes():
-    
-    conn = pyodbc.connect(
-        "Driver={SQL Server Native Client 11.0};"
-        "Server=DESKTOP-P8N0IJI;"
-        "Database=retail;"
-        "Trusted_Connection=yes;")
-
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT storetype_id FROM StoreTypes")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-    conn.close()
-
-    return {"storetypes": data}
+def get_storetypes() -> List:
+    return select_eq(TABLE_NAME, [ID_FIELD])
 
 @router.get("/get-storetype/{storetype_id}")
-def get_storetype(storetype_id: str):
-
-    conn = pyodbc.connect(
-        "Driver={SQL Server Native Client 11.0};"
-        "Server=DESKTOP-P8N0IJI;"
-        "Database=retail;"
-        "Trusted_Connection=yes;")
-
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT * FROM StoreTypes \
-                   WHERE storetype_id = '{storetype_id}'")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-    conn.close()
-
-    if data:
-        return {"Data": data}
-
-    raise HTTPException(status_code=404,
-                        detail=f"{storetype_id} not found.")
+def get_storetype(storetype_id: str) -> List[List]:
+    where_clause = get_where_clause([ID_FIELD], [storetype_id])
+    return select_eq(TABLE_NAME, where_clause=where_clause)
 
 @router.post("/add-storetype")
-def add_storetype(storetype: StoreType):
-
-    conn = pyodbc.connect(
-        "Driver={SQL Server Native Client 11.0};"
-        "Server=DESKTOP-P8N0IJI;"
-        "Database=retail;"
-        "Trusted_Connection=yes;")
-
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT storetype_id FROM StoreTypes \
-                   WHERE storetype_id = '{storetype.storetype_id[:4]}'")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-    
-    if data:
-        conn.close()
-        raise HTTPException(status_code=422,
-                            detail=f"{storetype.storetype_id[:4]} already exists.")
-
-    cursor.execute(f"INSERT INTO StoreTypes \
-                   VALUES('{storetype.storetype_id[:4]}', \
-                   '{storetype.storetype_description[:100]}')")
-    conn.commit()
-    conn.close()
-    return {"storetype_id": storetype.storetype_id[:4],
-            "storetype_description":
-            storetype.storetype_description[:100]}
+def add_storetype(storetype: StoreType) -> dict:
+    return insert(TABLE_NAME, storetype, ID_FIELD)
 
 @router.put("/update-storetype")
-def update_storetype(storetype: StoreType):
-
-    conn = pyodbc.connect(
-        "Driver={SQL Server Native Client 11.0};"
-        "Server=DESKTOP-P8N0IJI;"
-        "Database=retail;"
-        "Trusted_Connection=yes;")
-
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT storetype_id FROM StoreTypes \
-                   WHERE storetype_id = '{storetype.storetype_id}'")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-
-    if not data:
-        conn.close()
-        raise HTTPException(status_code=404,
-                            detail=f"{storetype.storetype_id} not found.")
-
-    cursor = conn.cursor()
-    cursor.execute(f"UPDATE StoreTypes SET \
-                   storetype_description = \
-                   '{storetype.storetype_description[:100]}' \
-                   WHERE storetype_id = '{storetype.storetype_id}'")
-    conn.commit()
-
-    cursor.execute(f"SELECT * FROM StoreTypes \
-                   WHERE storetype_id = '{storetype.storetype_id}'")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-    conn.close()
-
-    return {"Data": data}
+def update_storetype(storetype: StoreType) -> dict:
+    return update(TABLE_NAME, ID_FIELD, storetype)
 
 @router.delete("/delete-storetype/{storetype_id}")
-def delete_storetype(storetype_id: str):
-
-    conn = pyodbc.connect(
-        "Driver={SQL Server Native Client 11.0};"
-        "Server=DESKTOP-P8N0IJI;"
-        "Database=retail;"
-        "Trusted_Connection=yes;")
-
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT storetype_id FROM StoreTypes \
-                   WHERE storetype_id = '{storetype_id}'")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-
-    if not data:
-        conn.close()
-        raise HTTPException(status_code=404,
-                            detail=f"{storetype_id} not found.")
-
-    try:
-        cursor.execute(f"DELETE FROM StoreTypes \
-                   WHERE storetype_id = '{storetype_id}'")
-        conn.commit()
-    except pyodbc.IntegrityError:
-        raise HTTPException(status_code=409,
-                            detail=f"{storetype_id} is being referenced by a foreign key.")
-    finally:
-        conn.close()
-    return {"storetype_id": storetype_id, "is_deleted": True}
+def delete_storetype(storetype_id: str) -> dict:
+    return delete(TABLE_NAME, ID_FIELD, storetype_id)

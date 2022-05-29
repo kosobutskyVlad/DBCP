@@ -1,20 +1,21 @@
 from itertools import repeat
+from typing import List
 
-import numpy as np
+from numpy import arange
 
-from forecasting.models.base import Model
 from forecasting.models.ema import EMA
 from ..loss_function import get_loss
 
-class TrackingSignal(Model):
-    alpha = 0.01
-    y_prev = 0
+class TrackingSignal:
+    """Tracking signal model"""
     
-    def __init__(self):
+    def __init__(self) -> None:
+        self.alpha = 0.01
+        self.y_prev = 0
         self.error_ema = EMA(0.05, 0)
         self.error_abs_ema = EMA(0.05, 0)
-
-    def predict(self, y_true):
+        
+    def predict(self, y_true: float) -> float:
         error = y_true - self.y_prev
         error_pred = self.error_abs_ema.predict(abs(error))
         if error_pred == 0:
@@ -23,11 +24,11 @@ class TrackingSignal(Model):
         self.y_prev = self.alpha*y_true + (1-self.alpha)*self.y_prev
         return self.y_prev
     
-    def fit(self, y, loss_params):
-        best_loss = np.inf
+    def fit(self, y: float, loss_params: List[float]) -> None:
+        best_loss = float('inf')
 
-        for g1 in np.arange(0.05, 0.101, 0.005):
-            for g2 in np.arange(0.05, 0.101, 0.005):
+        for g1 in arange(0.05, 0.101, 0.005):
+            for g2 in arange(0.05, 0.101, 0.005):
                 y_pred = []
                 best_g = g1, g2
                 self.error_ema = EMA(g1, 0)

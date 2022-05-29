@@ -1,14 +1,19 @@
-from typing import Optional
+from typing import List
 
-import pyodbc
-from pydantic import BaseModel
-from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, constr
+from fastapi import APIRouter
+
+from sql_utils import get_where_clause
+from sql_requests import select_eq, insert, update, delete
+
+TABLE_NAME = "Cities"
+ID_FIELD = "city_id"
 
 class City(BaseModel):
-    city_id: str
-    city_name: Optional[str] = None
-    city_size: Optional[str] = None
-    country: Optional[str] = None
+    city_id: constr(curtail_length=4)
+    city_name: constr(curtail_length=50) = ""
+    city_size: constr(curtail_length=10) = ""
+    country: constr(curtail_length=50) = ""
 
 router = APIRouter(
     prefix="/cities",
@@ -16,149 +21,22 @@ router = APIRouter(
     responses={404: {"description": "Not found"}})
 
 @router.get("/get-cities")
-def get_cities():
-    
-    conn = pyodbc.connect(
-        "Driver={SQL Server Native Client 11.0};"
-        "Server=DESKTOP-P8N0IJI;"
-        "Database=retail;"
-        "Trusted_Connection=yes;")
-
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT city_id FROM Cities")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-    conn.close()
-
-    return {"cities": data}
+def get_cities() -> List:
+    return select_eq(TABLE_NAME, [ID_FIELD])
 
 @router.get("/get-city/{city_id}")
-def get_city(city_id: str):
-
-    conn = pyodbc.connect(
-        "Driver={SQL Server Native Client 11.0};"
-        "Server=DESKTOP-P8N0IJI;"
-        "Database=retail;"
-        "Trusted_Connection=yes;")
-
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT * FROM Cities WHERE city_id = '{city_id}'")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-    conn.close()
-
-    if data:
-        return {"Data": data}
-
-    raise HTTPException(status_code=404, detail=f"{city_id} not found.")
+def get_city(city_id: str) -> List[List]:
+    where_clause = get_where_clause([ID_FIELD], [city_id])
+    return select_eq(TABLE_NAME, where_clause=where_clause)
 
 @router.post("/add-city")
-def add_city(city: City):
-
-    conn = pyodbc.connect(
-        "Driver={SQL Server Native Client 11.0};"
-        "Server=DESKTOP-P8N0IJI;"
-        "Database=retail;"
-        "Trusted_Connection=yes;")
-
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT city_id FROM Cities \
-                    WHERE city_id = '{city.city_id[:4]}'")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-    
-    if data:
-        conn.close()
-        raise HTTPException(status_code=422,
-                            detail=f"{city.city_id[:4]} already exists.")
-
-    cursor.execute(f"INSERT INTO Cities VALUES('{city.city_id[:4]}', \
-                   '{city.city_name[:50]}', '{city.city_size[:10]}', \
-                   '{city.country[:50]}')")
-    conn.commit()
-    conn.close()
-    return {"city_id": city.city_id[:4],
-            "city_name": city.city_name[:50],
-            "city_size": city.city_size[:10],
-            "country": city.country[:50]}
+def add_city(city: City) -> dict:
+    return insert(TABLE_NAME, city, ID_FIELD)
 
 @router.put("/update-city")
-def update_city(city: City):
-
-    conn = pyodbc.connect(
-        "Driver={SQL Server Native Client 11.0};"
-        "Server=DESKTOP-P8N0IJI;"
-        "Database=retail;"
-        "Trusted_Connection=yes;")
-
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT city_id FROM Cities \
-                   WHERE city_id = '{city.city_id}'")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-
-    if not data:
-        conn.close()
-        raise HTTPException(status_code=404,
-                            detail=f"{city.city_id} not found.")
-
-    update = []
-    if city.city_name is not None:
-        update.append(f"city_name = '{city.city_name[:50]}'")
-    if city.city_size is not None:
-        update.append(f"city_size = '{city.city_size[:10]}'")
-    if city.country is not None:
-        update.append(f"country = '{city.country[:50]}'")
-    if not update:
-        conn.close()
-        raise HTTPException(status_code=422,
-                            detail=f"Fill at least one field.")
-
-    cursor = conn.cursor()
-    cursor.execute(f"UPDATE Cities SET {', '.join(update)} \
-                   WHERE city_id = '{city.city_id}'")
-    conn.commit()
-
-    cursor.execute(f"SELECT * FROM Cities \
-                   WHERE city_id = '{city.city_id}'")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-    conn.close()
-
-    return {"Data": data}
+def update_city(city: City) -> dict:
+    return update(TABLE_NAME, ID_FIELD, city)
 
 @router.delete("/delete-city/{city_id}")
-def delete_city(city_id: str):
-
-    conn = pyodbc.connect(
-        "Driver={SQL Server Native Client 11.0};"
-        "Server=DESKTOP-P8N0IJI;"
-        "Database=retail;"
-        "Trusted_Connection=yes;")
-
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT city_id FROM Cities \
-                   WHERE city_id = '{city_id}'")
-    data = []
-    for row in cursor:
-        data.append(list(row))
-
-    if not data:
-        conn.close()
-        raise HTTPException(status_code=404,
-                            detail=f"{city_id} not found.")
-    try:
-        cursor.execute(f"DELETE FROM Cities WHERE city_id = '{city_id}'")
-        conn.commit()
-    except pyodbc.IntegrityError:
-        raise HTTPException(status_code=409,
-                            detail=f"{city_id} is being referenced by a foreign key.")
-    finally:
-        conn.close()
-
-    return {"city_id": city_id, "is_deleted": True}
+def delete_city(city_id: str) -> dict:
+    return delete(TABLE_NAME, ID_FIELD, city_id)

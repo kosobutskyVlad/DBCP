@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import pandas as pd
 import numpy as np
 
@@ -9,22 +11,16 @@ FEATURE_COUNT = {
 }
 
 
-def ffill_history(response):
+def ffill_history(response) -> pd.DataFrame:
     purchase_history = response.json()["purchases"]
     dataframe = pd.DataFrame(
         purchase_history,
         columns=[
-            "id",
-            "store_id",
-            "product_id",
-            "purchase_date",
-            "price",
-            "sales",
-            "discount",
-            "revenue"
+            "id", "store_id", "product_id", "purchase_date",
+            "price", "sales", "discount", "revenue"
         ]
     )
-    dataframe = dataframe.loc[:, ["purchase_date","sales"]]
+    dataframe = dataframe.loc[:, ["purchase_date", "sales"]]
     dataframe = dataframe.sort_values("purchase_date")
     dataframe["purchase_date"] = pd.to_datetime(
         dataframe["purchase_date"]
@@ -34,15 +30,17 @@ def ffill_history(response):
         dataframe["purchase_date"].min(),
         dataframe["purchase_date"].max(),
         freq='1D'
-    ))
+        ))
+
     full_history = date_range.merge(
         dataframe, "left",
         left_on=0, right_on="purchase_date"
     ).drop(["purchase_date"], axis=1)
+
     full_history = full_history.rename(columns={0: "purchase_date"})
     return full_history.fillna(method="ffill")
 
-def aggregate_history(history):
+def aggregate_history(history: pd.DataFrame) -> pd.DataFrame:
     zero_values_count = (history["sales"] == 0).sum()
     zv_ratio = zero_values_count / len(history.index)
     if zv_ratio > 0.96:
@@ -53,7 +51,8 @@ def aggregate_history(history):
         return history.resample('W', on="purchase_date").sum(), "W"
     return history.resample("3D", on="purchase_date").sum(), "3D"
 
-def prepare_data(dataframe, aggr_window):
+def prepare_data(dataframe: pd.DataFrame,
+                 aggr_window: str) -> Tuple[np.ndarray, np.ndarray]:
     y = dataframe.iloc[:, 0].values
     X = np.zeros((len(dataframe.index), FEATURE_COUNT[aggr_window]))
 

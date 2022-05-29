@@ -43,7 +43,7 @@ def storetypes_frame(host: str, port: int):
                 f"http://{host}:{port}/storetypes/get-storetypes")
 
             if response_get_storetypes.status_code == 200:
-                storetypes_list = response_get_storetypes.json()["storetypes"]
+                storetypes_list = response_get_storetypes.json()
 
                 selectable_storetypes = {storetype[0]: False for storetype
                                         in storetypes_list}
@@ -83,9 +83,9 @@ def storetypes_frame(host: str, port: int):
                 try:
                     get_storetype_response = requests.get(
                         f"http://{host}:{port}/storetypes/get-storetype/{storetype}")
-                    info = get_storetype_response.json()["Data"][0]
+                    info = get_storetype_response.json()[0]
                     storetypes_info[storetype] = {
-                        "storetype_description": info[1][:100]}
+                        "storetype_description": info[1]}
                 except requests.exceptions.ConnectionError:
                     show_error_popup = True
                     error_popup_message = "Server unavailable.\nPlease retry later."

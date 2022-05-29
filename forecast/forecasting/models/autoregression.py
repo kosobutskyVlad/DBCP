@@ -1,20 +1,22 @@
 from itertools import repeat
+from typing import List
 
 import numpy as np
 
-from forecasting.models.base import Model
 from ..loss_function import get_loss_derivative
 
-class Autoregression(Model):
-    weights = None
+class Autoregression:
+    """Autoregression model"""
 
-    def __init__(self, feature_count):
+    def __init__(self, feature_count: int) -> None:
         self.weights = np.zeros((feature_count,))
     
-    def predict(self, X):
+    def predict(self, X) -> float:
         return X.dot(self.weights.T)
     
-    def fit(self, X, y, loss_params, step_size=1e-5, n_iter=100):
+    def fit(self, X: np.ndarray, y: np.ndarray, loss_params: List[float],
+            step_size: float = 1e-5, n_iter: int = 100) -> None:
+
         for _ in range(n_iter):
             y_pred = self.predict(X)
             loss_der = np.array(list(map(

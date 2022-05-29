@@ -1,3 +1,5 @@
+from typing import List
+
 from forecasting.data_prep_utils import prepare_data, FEATURE_COUNT
 from forecasting.models.ema import EMA
 from forecasting.models.holts import Holts
@@ -5,7 +7,9 @@ from forecasting.models.tracking_signal import TrackingSignal
 from forecasting.models.autoregression import Autoregression
 from forecasting.models.adaptive_composition import AdaptiveComposition
 
-def predict(dataframe, aggr_window, loss_parameters):
+def predict(dataframe, aggr_window: str,
+            loss_parameters: List[float]) -> List[float]:
+
     ema = EMA()
     holts = Holts()
     ts = TrackingSignal()

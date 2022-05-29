@@ -48,7 +48,7 @@ def products_frame(host: str, port: int):
                 f"http://{host}:{port}/products/get-products")
             
             if response_get_products.status_code == 200:
-                products_list = response_get_products.json()["products"]
+                products_list = response_get_products.json()
 
                 selectable_products = {product[0]: False for product in products_list}
                 products_refresh = {product[0]: True for product in products_list}
@@ -84,10 +84,10 @@ def products_frame(host: str, port: int):
                 try:
                     get_product_response = requests.get(
                         f"http://{host}:{port}/products/get-product/{product}")
-                    info = get_product_response.json()["Data"][0]
+                    info = get_product_response.json()[0]
                     products_info[product] = {
-                        "product_name": info[1][:50],
-                        "hierarchy_code": info[2][:11],
+                        "product_name": info[1],
+                        "hierarchy_code": info[2],
                         "price": info[3],
                         "product_length": info[4],
                         "product_depth": info[5],
@@ -221,6 +221,7 @@ def products_frame(host: str, port: int):
             if response_add_product.status_code == 422:
                 show_error_popup = True
                 error_popup_message = response_add_product.json()["detail"]
+                print(error_popup_message)
         except requests.exceptions.ConnectionError:
             show_error_popup = True
             error_popup_message = "Server unavailable.\nPlease retry later."

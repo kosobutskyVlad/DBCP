@@ -45,7 +45,7 @@ def cities_frame(host: str, port: int):
                 f"http://{host}:{port}/cities/get-cities")
 
             if response_get_cities.status_code == 200:
-                cities_list = response_get_cities.json()["cities"]
+                cities_list = response_get_cities.json()
 
                 selectable_cities = {
                     city[0]: False for city in cities_list}
@@ -86,10 +86,10 @@ def cities_frame(host: str, port: int):
                     get_city_response = requests.get(
                         f"http://{host}:{port}/cities/get-city/{city}")
 
-                    info = get_city_response.json()["Data"][0]
-                    cities_info[city] = {"city_name": info[1][:50],
-                                         "city_size": info[2][:10],
-                                         "country": info[3][:50]}
+                    info = get_city_response.json()[0]
+                    cities_info[city] = {"city_name": info[1],
+                                         "city_size": info[2],
+                                         "country": info[3]}
                 except requests.exceptions.ConnectionError:
                     show_error_popup = True
                     error_popup_message = "Server unavailable.\nPlease retry later."

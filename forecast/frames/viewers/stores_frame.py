@@ -45,7 +45,7 @@ def stores_frame(host: str, port: int):
                 f"http://{host}:{port}/stores/get-stores")
             
             if response_get_stores.status_code == 200:
-                stores_list = response_get_stores.json()["stores"]
+                stores_list = response_get_stores.json()
 
                 selectable_stores = {store[0]: False for store in stores_list}
                 stores_refresh = {store[0]: True for store in stores_list}
@@ -82,9 +82,9 @@ def stores_frame(host: str, port: int):
                 try:
                     get_store_response = requests.get(
                         f"http://{host}:{port}/stores/get-store/{store}")
-                    info = get_store_response.json()["Data"][0]
-                    stores_info[store] = {"storetype_id": info[1][:4],
-                                        "city_id": info[2][:4],
+                    info = get_store_response.json()[0]
+                    stores_info[store] = {"storetype_id": info[1],
+                                        "city_id": info[2],
                                         "store_size": info[3]}
                 except requests.exceptions.ConnectionError:
                     show_error_popup = True
@@ -135,7 +135,7 @@ def stores_frame(host: str, port: int):
                         "storetype_id": stores_info[store]["storetype_id"],
                         "city_id": stores_info[store]["city_id"],
                         "store_size": stores_info[store]["store_size"]})
-                    if response_update_store.status_code == 422:
+                    if response_update_store.status_code != 200:
                         show_error_popup = True
                         error_popup_message = response_update_store.json()["detail"]
                 except requests.exceptions.ConnectionError:

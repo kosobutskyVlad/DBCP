@@ -68,7 +68,7 @@ def purchases_frame(host: str, port: int):
                         "product_id": input_get_by_product_id})
             
             if response_get_purchases.status_code == 200:
-                purchases_list = response_get_purchases.json()["purchases"]
+                purchases_list = response_get_purchases.json()
 
                 selectable_purchases = {purchase[0]: False for purchase in purchases_list}
                 purchases_refresh = {purchase[0]: True for purchase in purchases_list}
@@ -106,10 +106,10 @@ def purchases_frame(host: str, port: int):
                     get_purchase_response = requests.get(
                         f"http://{host}:{port}/purchases/get-purchase/",
                         params={"purchase_id": purchases_list[i][0]})
-                    info = get_purchase_response.json()["Data"][0]
+                    info = get_purchase_response.json()[0]
                     purchases_info[purchase] = {
-                        "store_id": info[1][:5],
-                        "product_id": info[2][:5],
+                        "store_id": info[1],
+                        "product_id": info[2],
                         "purchase_date": info[3],
                         "price": info[4],
                         "sales": info[5],
@@ -183,15 +183,16 @@ def purchases_frame(host: str, port: int):
             if purchases_changed[purchase]:
                 try:
                     response_update_purchase = requests.put(
-                        f"http://{host}:{port}/purchases/update-purchase/{purchases_list[i][0]}",
+                        f"http://{host}:{port}/purchases/update-purchase",
                         json={"store_id": purchases_info[purchase]["store_id"],
                         "product_id": purchases_info[purchase]["product_id"],
                         "purchase_date": purchases_info[purchase]["purchase_date"],
                         "price": purchases_info[purchase]["price"],
                         "sales": purchases_info[purchase]["sales"],
                         "discount": purchases_info[purchase]["discount"],
-                        "revenue": purchases_info[purchase]["revenue"]})
-                    if response_update_purchase.status_code == 422:
+                        "revenue": purchases_info[purchase]["revenue"]},
+                        params={"purchase_id": purchases_list[i][0]})
+                    if response_update_purchase.status_code != 200:
                         show_error_popup = True
                         error_popup_message = response_update_purchase.json()["detail"]
                 except requests.exceptions.ConnectionError:
