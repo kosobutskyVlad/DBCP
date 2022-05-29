@@ -1,4 +1,5 @@
 from typing import Tuple
+from requests.models import Response
 
 import pandas as pd
 import numpy as np
@@ -10,9 +11,11 @@ FEATURE_COUNT = {
     "M": 7
 }
 
-
-def ffill_history(response) -> pd.DataFrame:
-    purchase_history = response.json()["purchases"]
+def ffill_history(response: Response) -> pd.DataFrame:
+    """
+    Adds missing days to the dataframe and forward fills them
+    """
+    purchase_history = response.json()
     dataframe = pd.DataFrame(
         purchase_history,
         columns=[

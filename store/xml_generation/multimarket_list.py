@@ -94,7 +94,7 @@ def generate_yml(path, server_host, server_port, store_id):
         )
 
         if response_get_stock.status_code == 200:
-            stock_list = response_get_stock.json()["stock"]
+            stock_list = response_get_stock.json()
         else:
             show_error_popup = True
             error_popup_message = response_get_stock.json()["detail"]
@@ -111,7 +111,7 @@ def generate_yml(path, server_host, server_port, store_id):
             )
 
             if response_get_product.status_code == 200:
-                product = response_get_product.json()["Data"][0]
+                product = response_get_product.json()[0]
 
         except requests.exceptions.ConnectionError:
             show_error_popup = True

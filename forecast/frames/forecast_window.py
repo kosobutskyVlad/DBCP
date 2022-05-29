@@ -77,7 +77,7 @@ def forecast_window(host: str, port: int):
                         "product_id": input_product_id})
 
             if response_get_parameters.status_code == 200:
-                loss_parameters = response_get_parameters.json()["parameters"][0][3:]
+                loss_parameters = response_get_parameters.json()[0][3:]
             else:
                 show_error_popup = True
                 error_popup_message = response_get_parameters.json()["detail"]

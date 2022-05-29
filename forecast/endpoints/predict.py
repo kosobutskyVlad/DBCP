@@ -53,7 +53,7 @@ def get_prediction(store_id: str, product_id: str,
         )
 
         if response_get_parameters.status_code == 200:
-            loss_parameters = response_get_parameters.json()["parameters"][0][3:]
+            loss_parameters = response_get_parameters.json()[0][3:]
         else:
             raise HTTPException(
                 status_code=404,
