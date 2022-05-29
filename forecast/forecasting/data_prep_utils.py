@@ -13,7 +13,7 @@ FEATURE_COUNT = {
 
 def ffill_history(response: Response) -> pd.DataFrame:
     """
-    Adds missing days to the dataframe and forward fills them
+    Adds missing days to the dataframe and forward fills them 
     """
     purchase_history = response.json()
     dataframe = pd.DataFrame(
@@ -44,6 +44,10 @@ def ffill_history(response: Response) -> pd.DataFrame:
     return full_history.fillna(method="ffill")
 
 def aggregate_history(history: pd.DataFrame) -> pd.DataFrame:
+    """
+    Chooses aggregation window to sum up purchase amounts over based 
+    on purchases frequency.
+    """
     zero_values_count = (history["sales"] == 0).sum()
     zv_ratio = zero_values_count / len(history.index)
     if zv_ratio > 0.96:
@@ -56,6 +60,10 @@ def aggregate_history(history: pd.DataFrame) -> pd.DataFrame:
 
 def prepare_data(dataframe: pd.DataFrame,
                  aggr_window: str) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Returns features array for autoregression based on aggregation 
+    window
+    """
     y = dataframe.iloc[:, 0].values
     X = np.zeros((len(dataframe.index), FEATURE_COUNT[aggr_window]))
 
