@@ -12,7 +12,7 @@ router = APIRouter(
 
 @router.get("")
 def get_prediction(store_id: str, product_id: str,
-                   host: str = "127.0.0.1", port: int = 5000):
+                   host: str = "127.0.0.1", port: int = 5000) -> int:
     try:
         response_get_store = requests.get(
             f"http://{host}:{port}/stores/get-store/{store_id}"
@@ -40,11 +40,14 @@ def get_prediction(store_id: str, product_id: str,
         )
 
         if response_get_purchases.status_code == 200:
-            purchases_dataframe, aggregation_window = aggregate_history(ffill_history(response_get_purchases))
+            purchases_dataframe, aggregation_window = aggregate_history(
+                ffill_history(response_get_purchases)
+            )
         else:
             raise HTTPException(
                 status_code=404,
-                detail=f"Purchases for {store_id} and {product_id} not found."
+                detail=(f"Purchases for {store_id} and {product_id} "
+                        "not found.")
             )
 
         response_get_parameters = requests.get(
@@ -57,7 +60,8 @@ def get_prediction(store_id: str, product_id: str,
         else:
             raise HTTPException(
                 status_code=404,
-                detail=f"Parameters for {store_id} and {product_id} not found."
+                detail=(f"Parameters for {store_id} and {product_id} "
+                        "not found.")
             )
     except requests.exceptions.ConnectionError:
          raise HTTPException(

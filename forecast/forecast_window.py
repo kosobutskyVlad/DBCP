@@ -45,22 +45,19 @@ def frame_forecast():
     imgui.separator()
 
     if imgui.button("Start forecast"):
-        try:
-            start_forecast()
-            forecast_status = "running"
-        except Exception:
-            forecast_status = "could not start a forecast"
+        start_forecast()
+        forecast_status = "running"
 
     if imgui.button("Stop forecast"):
         stop_forecast()
         forecast_status = "offline"
-    
+
     imgui.text(f"Forecast status: {forecast_status}")
 
     imgui.separator()
 
     if imgui.button("Open main menu"):
-            show_main_menu = True
+        show_main_menu = True
 
     if imgui.button("Close main menu"):
         show_main_menu = False
@@ -69,10 +66,11 @@ def frame_forecast():
 
     if show_main_menu:
         main_menu_frame(host, port)
-            
 
-def main():
-    start_window(1600, 900, "Sales Forecasting: Forecast", frame_forecast)
+
+def main() -> None:
+    start_window(1600, 900, "Sales Forecasting: Forecast",
+                 frame_forecast)
 
 
 if __name__ == '__main__':

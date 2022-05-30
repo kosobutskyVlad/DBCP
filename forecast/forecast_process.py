@@ -11,7 +11,7 @@ app = FastAPI()
 router = APIRouter()
 app.include_router(predict.router)
 
-def start_forecast():
+def start_forecast() -> None:
     global forecast_process
     forecast_process = multiprocessing.Process(
         target=uvicorn.run,
@@ -20,6 +20,6 @@ def start_forecast():
     )
     forecast_process.start()
 
-def stop_forecast():
+def stop_forecast() -> None:
     if forecast_process is not None:
         forecast_process.terminate()

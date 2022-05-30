@@ -6,8 +6,8 @@ from forecasting.models.ema import EMA
 from forecasting.models.autoregression import Autoregression
 
 class AdaptiveComposition:
-    """Weighted composition"""
-    
+    """Adaprive composition"""
+
     def __init__(self, models: List[Model],
                  aggr_window: str = None) -> None:
         self.models = []
@@ -17,9 +17,9 @@ class AdaptiveComposition:
             self.errors_ema.append(EMA(0.05, 0.01))
         self.predictions = np.full((len(self.models), ), fill_value=1)
         self.aggr_window = aggr_window
-    
+
     def predict(self, X: np.ndarray, y: np.ndarray) -> float:
-        
+
         err_pred = np.full((len(self.models), ), fill_value=0.01)
         for i, err_ema in enumerate(self.errors_ema):
             err = y - self.predictions[i]
@@ -38,13 +38,15 @@ class AdaptiveComposition:
                 self.predictions[i] = model.predict(y)
 
         return np.dot(self.predictions, weights.T)
-    
+
     def fit(self, X: np.ndarray, y: np.ndarray,
             loss_params: List[float]) -> None:
         for model in self.models:
             if isinstance(model, Autoregression):
                 if self.aggr_window is None:
-                    raise ValueError("Specify aggr_window when using Autoregression")
+                    raise ValueError(
+                        "Specify aggr_window when using Autoregression"
+                    )
                 model.fit(X, y, loss_params)
             else:
                 model.fit(y, loss_params)
